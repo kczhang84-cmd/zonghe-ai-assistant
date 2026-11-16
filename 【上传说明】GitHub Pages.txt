@@ -1,0 +1,128 @@
+# GitHub Pages 部署说明
+
+把 `dist_demo/` 里的文件上传到 GitHub，就能得到一个可以直接分享的演示链接。
+
+---
+
+## 先说清楚：这是演示版
+
+| 项目 | 演示版 | 完整版 |
+|---|---|---|
+| 看界面、点按钮 | ✅ 有反应 | ✅ |
+| 智能识别会议 | ⚠️ 前端模拟 | ✅ 真实解析 |
+| 生成 Word/Excel | ❌ 不能 | ✅ |
+| 调用大模型 | ❌ 不能 | ✅ |
+| 保存数据 | ❌ 不保存 | ✅ |
+| 需要服务器 | ❌ 不需要 | ✅ 需要 |
+
+**GitHub Pages 只能托管静态网页**，不能运行后端程序，这是平台限制，不是我们的选择。
+
+演示版适合：给领导看效果、给同事看界面、对外展示。
+演示版不能：真正用来办公。
+
+---
+
+## 上传步骤
+
+### 第 1 步：注册 GitHub
+
+访问 https://github.com ，点右上角 `Sign up` 注册。
+
+用户名会出现在网址里，建议用有辨识度的，比如 `zhangwei-sei`。
+
+### 第 2 步：新建仓库
+
+右上角 `+` → `New repository`
+
+| 项目 | 填写 |
+|---|---|
+| Repository name | `zonghe-ai-assistant` |
+| Description | 综智助手功能演示 |
+| 可见性 | **Public**（必须，免费版私有仓库不能用 Pages） |
+| Initialize | 勾选 `Add a README file` |
+
+点 `Create repository`。
+
+### 第 3 步：上传文件
+
+进入仓库 → `Add file` → `Upload files`
+
+把 `dist_demo/` 文件夹里的**全部 9 个文件**拖进去：
+
+```
+index.html              ← 总入口页（默认打开这个）
+meeting.html            ← 会务助手
+workbench.html          ← 工作台
+information.html        ← 每日要情
+official_documents.html ← 公文助手
+knowledge.html          ← 知识库
+supervision.html        ← 督办事项
+demo-shim.js            ← 演示模拟层
+.nojekyll               ← 必须，防止样式错乱
+```
+
+> `.nojekyll` 是隐藏文件，macOS 在 Finder 里按 `Cmd+Shift+.` 可以显示。
+> 没有这个文件，GitHub 会按 Jekyll 处理，可能影响访问。
+
+拖完后点 `Commit changes`。
+
+### 第 4 步：开启 Pages
+
+1. 仓库顶部 → `Settings`
+2. 左侧菜单 → `Pages`
+3. `Build and deployment` → `Source` 选 **Deploy from a branch**
+4. `Branch` 选 **main**，文件夹选 **/ (root)**
+5. 点 `Save`
+
+等 1–3 分钟，页面顶部会出现绿色提示，显示网址：
+
+```
+https://你的用户名.github.io/zonghe-ai-assistant/
+```
+
+### 第 5 步：验证
+
+打开网址（只需输入到仓库名那一层，不用带 index.html），
+应该看到「综智助手 · 功能演示」入口页，有 6 张功能卡片。
+
+建议用手机也打开一次，确认显示正常。
+
+---
+
+## 更新内容
+
+改完后重新上传覆盖同名文件，提交后等 1–3 分钟自动生效，链接不变。
+
+---
+
+## 常见问题
+
+**Q：打开是 404？**
+A：① 确认仓库是 Public；② 确认 `index.html` 在仓库根目录（不是子文件夹）；
+③ 刚开启 Pages 时要等 1–3 分钟。
+
+**Q：样式全乱了？**
+A：`.nojekyll` 文件没上传。补上传即可。
+
+**Q：能在国内正常访问吗？**
+A：GitHub Pages 在国内访问**不稳定**，有时会很慢或打不开。
+如果同事在国内，建议同时准备一份内网演示（让同事访问您的电脑）。
+
+**Q：能放真实数据吗？**
+A：**不要**。仓库是公开的，任何人都能看到源码。
+本演示版里全是编造的示例数据，没有任何真实会议或人员信息。
+
+**Q：能改成私有仓库吗？**
+A：可以，但私有仓库的 Pages 需要 GitHub 付费账号（Pro）。
+
+**Q：演示版里的"生成文件"按钮点了没反应？**
+A：正常。静态页面无法生成文件，会提示"实际部署后可下载真实文件"。
+
+---
+
+## 想真正能用怎么办
+
+需要一台服务器。见 `deploy/服务器采购清单.md` 和 `deploy/公网部署指南.md`。
+
+服务器到位后，同一套界面就能变成真正可用的系统，
+具备真实的文档生成、模型调用和数据存储能力。

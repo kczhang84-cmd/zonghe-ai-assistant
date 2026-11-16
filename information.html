@@ -1,0 +1,311 @@
+<!doctype html><html lang="zh-CN"><head>
+<script src="demo-shim.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>政务信息助手</title><style>
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;color:#203246;background:#f3f6f8;margin:0}main{max-width:1080px;margin:34px auto;padding:0 18px}h1{font-size:28px}h2{font-size:19px;margin-top:0}.card{background:#fff;border:1px solid #dce4eb;border-radius:12px;padding:22px;margin:18px 0;box-shadow:0 4px 16px #2032460a}input,select,textarea,button{font:inherit;padding:9px;border:1px solid #aebdca;border-radius:6px}textarea{min-height:100px;resize:vertical;width:calc(100% - 20px)}button{background:#164e79;color:white;border:0;cursor:pointer;margin:4px}button:disabled{background:#9eabb7;cursor:not-allowed}.secondary{background:#e8eef4;color:#203246}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.grid label{display:flex;flex-direction:column;gap:5px}.wide{grid-column:1/-1}table{border-collapse:collapse;width:100%;font-size:14px}td,th{border-bottom:1px solid #e3e9ee;padding:8px;text-align:left;vertical-align:top}th{background:#eef3f7}.scroll{overflow:auto}#review,#aiResult{display:none}#message{white-space:pre-wrap;color:#9a2d2d}small{color:#687989}a{color:#164e79}.task-picker{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.task-picker select{min-width:340px}.divider{border:0;border-top:1px solid #e1e8ed;margin:20px 0}.readiness{margin-top:16px;padding:16px;border-radius:10px;background:#f0f6f9;border-left:4px solid #2e789e}.readiness strong{display:block;margin-bottom:7px}.pill{display:inline-block;background:#e1ebf1;color:#31566d;border-radius:999px;padding:4px 9px;margin:3px 4px 0 0;font-size:12px}.pill.warn{background:#fff0d5;color:#815716}.verified-note{display:inline-block;background:#edf7f2;color:#276c55;border-radius:7px;padding:6px 9px;font-size:12px}.ai-card{border-left:4px solid #6b63a9;background:linear-gradient(135deg,#fff,#f7f5ff)}.model-status{display:inline-block;border-radius:999px;background:#ebe8f8;color:#514a87;padding:5px 10px;font-size:12px}.consent{display:flex;align-items:flex-start;gap:8px;background:#fff8e8;border:1px solid #efd9a8;border-radius:8px;padding:11px;margin:12px 0}.consent input{margin-top:3px}#aiAnalysisText,#aiRelevance,#aiKeyPoints,#aiSuggestedBody,#aiMissingFacts,#aiQualityChecks{background:#fff}#aiSuggestedBody{min-height:240px}.format-card{border-left:4px solid #b51f2e}.format-note{background:#fff6f6;border-radius:8px;padding:10px;color:#71303a}@media(max-width:720px){.grid{grid-template-columns:1fr}.wide{grid-column:auto}.task-picker select{min-width:0;width:100%}}
+
+.req{color:#c0392b;font-weight:700}
+.candidate-date-hint{color:#687989}
+
+.daily-skipped{background:#fffbe8;border:1px solid #e8d79a;border-radius:8px;padding:10px 12px;margin:10px 0;font-size:13px}
+.daily-skipped ul{margin:6px 0 0 18px}
+
+.section-nav{position:sticky;top:0;z-index:500;display:flex;gap:6px;flex-wrap:wrap;
+background:rgba(255,255,255,.96);padding:8px 4px;border-bottom:1px solid #dce4eb;margin-bottom:10px}
+.section-nav a{font-size:13px;color:#31566d;text-decoration:none;padding:5px 11px;border-radius:999px;
+border:1px solid #cfdde6;background:#f6f9fb;white-space:nowrap}
+.section-nav a:hover{background:#e7f1f7;border-color:#a9c9dd}
+.flow-hint{background:#eef6fb;border-left:3px solid #2e789e;padding:9px 12px;border-radius:0 6px 6px 0;font-size:13px;line-height:1.6;margin:0 0 14px}
+
+.inline-hint{color:#8a5a00;font-size:13px;margin-left:8px}
+
+.section-nav a.hot{background:#164e79;color:#fff;border-color:#164e79}
+
+.verified-at{color:#267054}
+
+.dsh-toast{position:fixed;left:50%;top:16px;transform:translate(-50%,-160%);z-index:9999;
+max-width:min(720px,92vw);background:#243b4a;color:#fff;padding:12px 20px;border-radius:8px;
+font-size:14px;line-height:1.55;box-shadow:0 8px 26px rgba(0,0,0,.24);
+transition:transform .22s ease;pointer-events:none}
+.dsh-toast.show{transform:translate(-50%,0)}
+.dsh-toast.bad{background:#9a2d2d}
+
+.field-guide{background:#eef6fb;border-left:3px solid #2e789e;padding:9px 12px;border-radius:0 6px 6px 0;font-size:13px;line-height:1.6;margin:8px 0 12px}
+.opt{background:#eef3f7;color:#5b6b78;border-radius:999px;padding:1px 7px;font-size:11px;font-weight:400}
+.opt-guide{color:#687989;font-size:12px}
+.hint-inline{display:block;color:#7a8a96;font-size:11px;font-weight:400;margin:1px 0 3px}
+
+.auto{background:#e8f3ec;color:#2f6b47;border-radius:999px;padding:1px 7px;font-size:11px;font-weight:400}
+</style><style>.section-nav{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}.section-nav a{background:#e8eef4;padding:8px 12px;border-radius:999px;text-decoration:none}.candidate-table textarea{min-width:220px;min-height:72px}.candidate-table input[type=text]{min-width:150px}.status-ok{color:#267054;font-weight:600}.status-bad{color:#9a2d2d;font-weight:600}.daily-item{border:1px solid #dce4eb;border-radius:8px;padding:12px;margin:10px 0}.comparison{grid-template-columns:1fr 1fr}.comparison textarea{min-height:220px}.subtle{background:#f7f9fb;border-radius:8px;padding:10px}.action-row{display:flex;gap:7px;flex-wrap:wrap;align-items:center}.danger{background:#8f3038}#polish,#special,#special~.card{display:none}
+/* 导航切换后显示 */
+#polish.shown,#special.shown,#special.shown~.card{display:block}</style></head><body><main><p><a href="workbench.html">返回综智助手首页</a>　<a href="meeting.html">会务助手</a>　<a href="official_documents.html">公文助手</a>　<a href="knowledge.html">综合知识库</a></p><h1>《每日要情》专项助手</h1><p>面向政策、国内行业项目和国际能源化工动态，完成合规收集、候选筛选、来源核验、初稿生成和历史留痕。未经人工审核不会发布或发送。</p><nav class="section-nav">
+<a href="javascript:void(0)" onclick="showInfoSection('daily')" data-sec="daily">① 候选池与日报</a>
+<a href="javascript:void(0)" onclick="showInfoSection('polish')" data-sec="polish">② 文稿润色</a>
+<a href="javascript:void(0)" onclick="showInfoSection('special')" data-sec="special">③ 信息专报</a>
+<a href="javascript:void(0)" onclick="showInfoSection('automation')" data-sec="automation">自动采集设置</a>
+<a href="javascript:void(0)" onclick="showInfoSection('dailyHistory')" data-sec="dailyHistory">历史记录</a>
+</nav>
+<p class="flow-hint"><b>推荐顺序：</b>① 收集并核验候选 → 生成《每日要情》 → ② 如需润色 → ③ 从已核验内容挑选，生成《信息专报》。
+日报与专报<b>共用同一套核验数据</b>，不必重复登记来源。</p>
+<section id="daily"><div class="card"><h2>《每日要情》来源与候选信息池</h2><p><small>系统只获取公开可访问页面。需要登录、订阅、无正文或访问失败时会明确提示，不会标记为已核验。</small></p><details><summary>查看和维护信息来源</summary><div id="sourceRegistry" class="subtle">正在读取来源库……</div><label>选择已有来源进行编辑 <span class="auto">自动</span><select id="registryExisting" onchange="selectRegistrySource()"><option value="">＋ 新增来源</option></select></label><div class="grid"><label>来源名称 <span class="req">*</span><input id="registryName" placeholder="必填"></label></label><label>类别 <span class="req">*</span><select id="registryCategory"><option value="policy">政策信息</option><option value="domestic">国内行业及项目动态</option><option value="international">国际能源化工信息</option></select></label><label>网站首页 <span class="opt">可选</span><input id="registryHomepage" type="url" placeholder="可留空"></label><label>RSS/Atom地址 <span class="opt">可选</span><input id="registryFeed" type="url" placeholder="可留空"></label><label class="wide">新闻栏目地址（公开列表页） <span class="opt">可选</span><input id="registryListUrl" type="url" placeholder="https://..."></label><label class="wide">文章链接匹配规则 <span class="opt">可选</span><input id="registryListPattern" placeholder="正则表达式，留空表示不过滤"></label><label class="wide">备注 <span class="opt">可选</span><input id="registryNote" placeholder="可留空"></label></div><button class="secondary" onclick="saveRegistrySource()">保存来源</button> <button class="secondary" onclick="collectFeeds()">采集已配置新闻来源</button><span id="collectResult" class="status"></span></details><hr class="divider"><h3>补充候选信息</h3>
+<p class="field-guide">只有 <span class="req">*</span> 的三项必须填：<b>标题、类别、发布机构</b>。其余可以留空，之后在核验时再补。
+<span class="opt-guide">（标「可选」的留空不影响保存）</span></p>
+<div class="grid">
+<label>原始标题 <span class="req">*</span><input id="candidateTitle" placeholder="必填"></label>
+<label>信息类别 <span class="req">*</span><select id="candidateCategory"><option value="policy">政策信息</option><option value="domestic">国内行业及项目动态</option><option value="international">国际能源化工信息</option></select></label>
+<label>发布机构或媒体 <span class="req">*</span><input id="candidateSource" placeholder="必填，如 国家发展改革委"></label>
+<label>发布时间 <span class="req" title="核验为已核验时必填">*</span><small class="hint-inline">核验时必填，此处可先留空</small><input id="candidateDate" type="date"></label>
+<label class="wide">原文链接 <span class="opt">可选</span><input id="candidateUrl" type="url" placeholder="可留空"></label>
+<label class="wide">已有原文摘录 <span class="opt">可选</span><small class="hint-inline">无法自动获取原文时手工粘贴；核验时须补摘要</small><textarea id="candidateExcerpt" placeholder="可留空"></textarea></label>
+<label class="consent wide"> <span class="opt">可选</span><input id="candidateFetch" type="checkbox"><span>尝试从公开链接获取原文（需先填链接）；如页面需登录、受限或无正文，保留失败提示并转人工核验。</span></label>
+</div>
+<button onclick="addCandidate()">加入候选池</button></div>
+<div class="card"><div class="action-row"><h2 style="margin:0 auto 0 0">候选信息 <small style="font-weight:400;color:#687989">（下方两个下拉只是筛选/排序，不影响数据）</small></h2><select id="candidateFilter" onchange="loadCandidates()" title="筛选：只影响显示，不影响数据" aria-label="按类别筛选"><option value="">全部类别</option><option value="policy">政策信息</option><option value="domestic">国内行业及项目动态</option><option value="international">国际能源化工信息</option></select><select id="candidateSort" onchange="loadCandidates()" title="排序：只影响显示顺序" aria-label="排序方式"><option value="published_desc">发布时间从新到旧</option><option value="published_asc">发布时间从旧到新</option></select></div><div class="scroll"><table class="candidate-table"><thead><tr><th>标题与来源</th><th>摘要与业务相关性</th><th>状态</th><th>操作</th></tr></thead><tbody id="candidateRows"></tbody></table></div></div>
+<div class="card"><h2>生成《每日要情》初稿</h2><p><small>只采用人工确认“已核验”并勾选的信息，默认最多三条。顺序为政策、国内、国际；可在生成后编辑或替换。</small></p>
+<p class="flow-hint"><b>生成后怎么改：</b>每条都可以直接改标题和正文，改完点“导出可编辑Word”。需要整篇润色时再去「② 文稿润色」。</p><button onclick="generateDailyBrief()">根据已选信息生成初稿</button><div id="dailyBriefResult" style="display:none"><label>标题 <span class="auto">默认</span><input id="dailyTitle" value="《每日要情》"></label><div id="dailyItems"></div><button onclick="exportDailyBrief()">导出可编辑Word</button><p><small>当前为可编辑默认格式，未认定为正式排版标准；不会自动发布。</small></p></div></div></section>
+<section id="polish"><div class="card ai-card"><h2>信息类文稿润色与修改</h2>
+<p class="flow-hint"><b>什么时候用这一块：</b>《每日要情》生成后，如果想逐条微调，直接在上一步的编辑框里改即可，<b>不必来这里</b>。
+这里适合处理<b>整篇已成稿的文稿</b>（如上级下发的素材、别人写的初稿），需要通篇润色或做修改对照时使用。</p>
+<p><small>支持直接粘贴或导入 .docx/.txt。先做本地确定性检查；非涉密内容可再调用集团模型。人员、职务、单位、项目、时间、政策名称和数字不得擅自改写。</small></p><label>导入文稿 <span class="opt">可选</span><input id="polishFile" type="file" accept=".docx,.txt" onchange="importPolishFile()"></label><label>原文 <span class="opt">可选</span><textarea id="polishOriginal" style="min-height:220px"></textarea></label><label>修改要求 <span class="opt">可选</span><input id="polishInstruction" placeholder="例如：精简语言，保持所有数字和项目名称不变"></label><div class="action-row"><button onclick="localPolishReview()">本地检查</button><label class="consent"> <span class="opt">可选</span><input id="polishConsent" type="checkbox"><span>确认原文为非涉密并可发送至集团模型</span></label><button id="polishAiButton" onclick="aiPolishReview()" disabled>AI润色</button></div><div id="polishResult" style="display:none"><div class="grid comparison"><label>原文 <span class="auto">自动</span><textarea id="polishComparedOriginal" readonly></textarea></label><label>修改后文本 <span class="auto">自动</span><textarea id="polishRevised"></textarea></label></div><label>修改说明 <span class="auto">自动</span><textarea id="polishNotes" readonly></textarea></label><button onclick="copyPolishResult()">复制修改后文本</button><button onclick="exportPolishResult()">导出修改对照Word</button></div></div></section>
+<section id="automation"><div class="card"><h2>自动采集与邮件设置</h2>
+<p class="flow-hint"><b>这一块是可选的。</b>只在自己写信息、手工收集时，完全不需要配置这里。
+只有想让系统<b>定时自动抓取</b>公开新闻源时才需要。邮件默认必须人工审核，保存设置不会自动发送。</p>
+<p><small>设置保存在本机。自动采集只访问已登记的公开订阅源；邮件默认必须人工审核，且不会因保存设置而真实发送。</small></p><div class="grid"><label>自动任务 <span class="opt">可选</span><select id="autoEnabled"><option value="0">关闭</option><option value="1">开启</option></select></label><label>执行时区 <span class="auto">默认</span><input id="autoTimezone" value="Asia/Shanghai"></label><label>采集时间 <span class="auto">默认</span><input id="autoCollectTime" type="time" value="07:30"></label><label>每次最多采集 <span class="auto">默认</span><input id="autoLimit" type="number" min="1" max="100" value="30"></label><fieldset class="wide"><legend>执行日期</legend><label><input class="autoWeekday" type="checkbox" value="1">周一</label> <label><input class="autoWeekday" type="checkbox" value="2">周二</label> <label><input class="autoWeekday" type="checkbox" value="3">周三</label> <label><input class="autoWeekday" type="checkbox" value="4">周四</label> <label><input class="autoWeekday" type="checkbox" value="5">周五</label> <label><input class="autoWeekday" type="checkbox" value="6">周六</label> <label><input class="autoWeekday" type="checkbox" value="7">周日</label></fieldset><fieldset class="wide"><legend>采集范围</legend><label><input class="autoCategory" type="checkbox" value="policy">政策</label> <label><input class="autoCategory" type="checkbox" value="domestic">国内行业及项目</label> <label><input class="autoCategory" type="checkbox" value="international">国际能源化工</label></fieldset><label> <span class="opt">可选</span><input id="autoGenerate" type="checkbox">采集后尝试生成初稿</label><label> <span class="opt">可选</span><input id="autoEmailEnabled" type="checkbox">生成后建立邮件待审核任务</label></div><hr class="divider"><h3>邮件配置</h3>
+<p class="flow-hint"><b>注意：</b>配置好 SMTP 并填入真实收件人后，「真实发送」会把稿件发出去；不确定时请先用「模拟发送」。这两项都在下方“自动任务与邮件历史”里。</p><div class="grid"><label>计划发信时间 <span class="auto">默认</span><input id="autoEmailTime" type="time" value="08:30"></label><label> <span class="opt">可选</span><input id="autoReviewRequired" type="checkbox" checked disabled>真实发信前必须人工审核</label><label>SMTP服务器 <span class="opt">可选</span><input id="smtpHost"></label><label>端口 <span class="auto">默认</span><input id="smtpPort" type="number" value="465"></label><label>加密 <span class="auto">默认</span><select id="smtpEncryption"><option value="ssl">SSL</option><option value="starttls">STARTTLS</option><option value="none">无</option></select></label><label>用户名 <span class="opt">可选</span><input id="smtpUsername"></label><label>发件地址 <span class="opt">可选</span><input id="senderEmail" type="email"></label><label class="wide">收件人（每行一个；抄送请写 cc:邮箱） <span class="opt">可选</span><textarea id="emailRecipients"></textarea></label><label class="wide">主题模板 <span class="auto">默认</span><input id="subjectTemplate" value="《每日要情》—{date}"></label></div><p id="credentialStatus" class="subtle">正在读取凭据状态……</p><div class="action-row"><button onclick="saveAutomation()">保存设置</button><button class="secondary" onclick="runAutomationNow()">立即采集一次</button><button class="secondary" onclick="loadAutomationHistory()">刷新记录</button></div></div></section>
+<section id="dailyHistory"><div class="card"><h2>自动任务与邮件历史</h2><div id="automationHistory" class="scroll">正在读取……</div></div></section>
+<section id="special"><h2>信息专报与来源核验</h2></section>
+<div class="card"><h2>1 选择或创建信息任务</h2><p>继续已有任务，或新建一篇信息稿。</p><div class="task-picker"><select id="tasks" aria-label="选择已有信息任务" onchange="openSelected()" aria-label="已有信息任务"><option value="">请选择已有任务</option></select></div><hr class="divider"><div class="grid"><label>新任务名称 <span class="req">*</span><input id="taskTitle" placeholder="例如 裕龙项目节点专报"></label><label>信息类别<select id="category"><option>项目节点</option><option>技术突破</option><option>科技奖励</option><option>外部行业动态</option><option>政策解读</option></select></label></div><button onclick="createTask()">创建信息任务</button><div id="summary"></div><div id="readiness"></div></div>
+<div class="card format-card"><h2>2 选择稿型和正式版式</h2><p class="format-note">系统将按既有专报范文生成：标题结果前置，首段写清时间、事项、SEI角色和结果，后续写意义、技术特点、量化成效；没有依据的内容不补写。</p><div class="grid"><label>稿型 <span class="req">*</span><select id="documentType"><option value="project_milestone">项目节点类</option><option value="technology_breakthrough">技术突破类</option><option value="science_award">科技奖励类</option><option value="external_brief">外部行业信息类</option><option value="policy_interpretation">政策解读类</option></select></label><label>专报名称 <span class="auto">默认</span><input id="seriesTitle" value="石化信息"></label><label>期号 <span class="opt">可选</span><input id="issueNo" placeholder="例如 25"></label><label>成稿日期 <span class="auto">默认</span><input id="publicationDate" type="date"></label><label>编发单位 <span class="auto">默认</span><input id="issuingUnit" value="工程建设公司"></label><label>联系人 <span class="opt">可选</span><input id="contactName" placeholder="由责任人填写"></label><label>联系电话 <span class="opt">可选</span><input id="contactPhone" placeholder="座机或手机"></label><label>联系人邮箱 <span class="opt">可选</span><input id="contactEmail" type="email"></label><label class="wide">报送单位 <span class="auto">默认</span><input id="reportTo" value="中国石油化工集团有限公司综合管理部"></label></div></div>
+<div class="card"><h2>3 填写素材或修改初稿</h2>
+<p class="flow-hint"><b>素材可从已核验的候选信息中挑选。</b>点击下面按钮，会把候选池里<b>已核验</b>的信息「标题 + 摘要 + 来源」带进来，省去手工抄录；带进来后仍可自由编辑。</p>
+<p><button class="secondary" onclick="importVerifiedCandidates()">从已核验候选信息带入素材</button>
+<span id="importHint" class="inline-hint"></span></p>
+<label>信息标题（没有可暂留空，AI会建议） <span class="opt">可选</span><input id="headline" style="width:calc(100% - 20px)"></label><p><label>已确认事实、原始素材或当前正文 <span class="req">*</span><textarea id="body" placeholder="粘贴项目节点、技术数据、SEI承担角色、业主评价、下一步计划等已确认内容。不要粘贴涉密信息。"></textarea></label></p></div>
+<div class="card"><h2>4 登记事实来源</h2><p><span class="verified-note">“责任人已核验”必须由实际审核人员勾选</span></p><p><small>系统保存来源名称、链接、发布日期和原文摘录的快照，但不会代替人工判断来源是否可信。</small></p><div class="scroll"><table><thead><tr><th>编号</th><th>来源名称</th><th>链接</th><th>发布日期</th><th>原文摘录</th><th>责任人已核验</th><th></th></tr></thead><tbody id="sourceRows"></tbody></table></div><button class="secondary" onclick="addSource()">新增来源</button></div>
+<div class="card"><h2>5 关联正文观点与来源</h2><p><small>每一条需要核实的正文观点，都应指明对应的来源编号和原文依据。</small></p><div class="scroll"><table><thead><tr><th>对应来源编号</th><th>正文观点</th><th>原文依据</th><th></th></tr></thead><tbody id="citationRows"></tbody></table></div><button class="secondary" onclick="addCitation()">新增观点与来源对应关系</button></div>
+<div class="card ai-card"><h2>AI 辅助：按SEI专报范文生成正式初稿</h2><p><span class="model-status" id="aiStatus">正在检查集团模型配置……</span> <button class="secondary" id="aiTestButton" onclick="testAiConnection()" disabled>测试当前连接</button></p><p><small>正式调用仅发送稿型、类别、标题、正文和责任人已核验的来源摘录；不发送联系人、来源链接、未核验来源或其他任务数据。结果先只读预览，不自动覆盖或发布。</small></p><label class="consent"> <span class="opt">可选</span><input id="aiConsent" type="checkbox"><span>我已检查素材和已核验来源摘录，确认均为非涉密内容且可发送至集团大模型。</span></label><button id="aiAnalyzeButton" onclick="analyzeWithAi()" disabled>生成正式专报初稿</button><div id="aiResult"><p><small id="aiMeta"></small></p><label>素材摘要 <span class="auto">自动</span><textarea id="aiAnalysisText" aria-label="AI 政务信息分析结果" readonly></textarea></label><label>关键信息 <span class="auto">自动</span><textarea id="aiKeyPoints" readonly></textarea></label><label>与 SEI 业务相关性 <span class="auto">自动</span><textarea id="aiRelevance" readonly></textarea></label><label>缺失或待确认事实 <span class="auto">自动</span><textarea id="aiMissingFacts" readonly></textarea></label><label>文风与质量检查 <span class="auto">自动</span><textarea id="aiQualityChecks" readonly></textarea></label><label>建议标题 <span class="auto">自动</span><input id="aiSuggestedHeadline" readonly style="width:calc(100% - 20px)"></label><label>正式专报建议正文 <span class="auto">自动</span><textarea id="aiSuggestedBody" readonly></textarea></label><button id="aiAdoptButton" onclick="adoptAiInformation()" style="display:none">载入正式初稿到编辑区</button><p><small>只有引用编号完整且全部对应已核验来源时才允许载入。载入不会保存；仍须检查来源、观点对应关系并再次人工确认，才会生成正式版式 Word 和独立核验记录。</small></p></div></div>
+<div class="card" id="review"><h2>6 预览、人工确认并保存</h2>
+<p><small>先点“预览并检查”核对全文与来源标注；确认无误后再保存为新版本。保存前不会覆盖任何已有版本。</small></p>
+<p><button onclick="previewDraft()">预览并检查</button></p>
+<div id="reviewContent"></div><button id="confirmButton" onclick="confirmDraft()">确认并保存新版本</button><button class="secondary" onclick="cancelReview()">返回修改</button></div>
+<div class="card"><h2>7 历史版本</h2><div id="history">打开任务后显示。</div></div><p id="message"></p>
+</main><script>
+let tid=localStorage.getItem('p0_information_id')||'', pending=null;const $=id=>document.getElementById(id);function msg(s){$('message').textContent=s;showToast(s)}
+// 问题2：本页没有浮动提示，生成失败时错误信息写在页面最底部的 #message 里，
+// 用户当前视口看不到，表现为"点了没反应/没生成内容"。
+function showToast(text){
+  if(!text)return;
+  let t=document.getElementById('dshToast');
+  if(!t){t=document.createElement('div');t.id='dshToast';document.body.appendChild(t)}
+  t.textContent=text;
+  t.className='dsh-toast show error'+(/失败|不能|请先|错误|无效/.test(text)?' bad':'');
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer=setTimeout(()=>{t.className='dsh-toast'},4200);
+}function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}async function api(path,body){let r;try{r=await fetch(path,{method:body?'POST':'GET',headers:body?{'Content-Type':'application/json'}:{},body:body?JSON.stringify(body):undefined})}catch(e){throw Error('本机服务未连接，请重新启动综智助手后刷新页面')}let raw=await r.text(),d={};if(raw){try{d=JSON.parse(raw)}catch(e){throw Error('后台返回内容不完整，请刷新后重试')}}if(!r.ok)throw Error(d.error||'操作失败');return d}
+async function loadTasks(){let rows=await api('/api/information/tasks');$('tasks').innerHTML='<option value="">请选择已有任务</option>'+rows.map(x=>`<option value="${esc(x.id)}">${esc(x.title)}${x.category?' · '+esc(x.category):''} · v${x.revision}</option>`).join('');if(tid)$('tasks').value=tid}async function createTask(){try{let d=await api('/api/information/task',{title:$('taskTitle').value,category:$('category').value});tid=d.id;localStorage.setItem('p0_information_id',tid);await loadTasks();await refresh();msg('信息任务已创建')}catch(e){msg(e.message)}}async function openSelected(){tid=$('tasks').value;if(!tid)return;localStorage.setItem('p0_information_id',tid);try{await refresh();msg('任务已打开')}catch(e){msg(e.message)}}
+const categoryNames={policy:'政策信息',domestic:'国内行业及项目动态',international:'国际能源化工信息'};let dailyBriefData=null,polishData=null;
+function downloadB64(filename,value){let raw=atob(value),bytes=new Uint8Array(raw.length);for(let i=0;i<raw.length;i++)bytes[i]=raw.charCodeAt(i);let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([bytes]));a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+async function loadSourceRegistry(){try{await refreshRegistryEditor();let d=await api('/api/information/source-registry');$('sourceRegistry').innerHTML=d.sources.map(x=>`<span class="pill">${esc(x.name)} · ${esc(categoryNames[x.category]||x.category)}${x.homepage_url?' · <a href="'+esc(x.homepage_url)+'" target="_blank" rel="noopener">网站</a>':' · 需补链接'}</span>`).join('')}catch(e){$('sourceRegistry').textContent=e.message}}
+async function collectFeeds(){
+  let s=$('collectResult');
+  s.textContent='正在采集 RSS、HTML 和 JSON 新闻……';
+  try {
+    let d=await api('/api/information/collect-all',{});
+    let errors=d.errors||[];
+    s.textContent=`采集完成：RSS新增 ${d.feeds.added} 条，网页/JSON新增 ${d.lists.added} 条；合计新增 ${d.added} 条，跳过 ${d.skipped} 条。${errors.length?'错误：'+errors.join('；'):''}`;
+    await loadCandidates();
+  } catch(e) {
+    s.textContent=e.message;
+  }
+}
+
+let registrySources = [];
+
+function registrySelectedEnabled(){
+  const id = $('registryExisting').value;
+  const source = registrySources.find(x => x.id === id);
+  return source ? Boolean(source.enabled) : true;
+}
+
+function selectRegistrySource(){
+  const id = $('registryExisting').value;
+  const source = registrySources.find(x => x.id === id);
+
+  $('registryName').value = source?.name || '';
+  $('registryCategory').value = source?.category || 'policy';
+  $('registryHomepage').value = source?.homepage_url || '';
+  $('registryFeed').value = source?.feed_url || '';
+  $('registryListUrl').value = source?.list_url || '';
+  $('registryListPattern').value = source?.list_pattern || '';
+  $('registryNote').value = source?.note || '';
+}
+
+async function refreshRegistryEditor(){
+  const selected = $('registryExisting').value;
+  const data = await api('/api/information/source-registry');
+
+  registrySources = data.sources || [];
+
+  const selector = $('registryExisting');
+  selector.replaceChildren();
+
+  selector.add(new Option('＋ 新增来源', ''));
+
+  registrySources.forEach(source => {
+    selector.add(new Option(source.name, source.id));
+  });
+
+  if (registrySources.some(x => x.id === selected)) {
+    selector.value = selected;
+  }
+
+  selectRegistrySource();
+}
+
+async function saveRegistrySource(){try{await api('/api/information/source-registry',{id:$('registryExisting').value,name:$('registryName').value,category:$('registryCategory').value,homepage_url:$('registryHomepage').value,feed_url:$('registryFeed').value,list_url:$('registryListUrl').value,list_pattern:$('registryListPattern').value,note:$('registryNote').value,enabled:registrySelectedEnabled()});await loadSourceRegistry();msg('信息来源已保存')}catch(e){msg(e.message)}}
+async function addCandidate(){let payload={title:$('candidateTitle').value,category:$('candidateCategory').value,source_name:$('candidateSource').value,published_at:$('candidateDate').value,url:$('candidateUrl').value,original_excerpt:$('candidateExcerpt').value,fetch_original:$('candidateFetch').checked};try{msg(payload.fetch_original?'正在获取公开原文……':'正在加入候选池……');await api('/api/information/candidate/add',payload);['candidateTitle','candidateSource','candidateDate','candidateUrl','candidateExcerpt'].forEach(x=>$(x).value='');$('candidateFetch').checked=false;await loadCandidates();msg('候选信息已加入，当前状态为待核验')}catch(e){msg(e.message)}}
+function candidateStatus(x){let v=x.verification_status==='verified'?'<span class="status-ok">已核验</span>':x.verification_status==='failed'?'<span class="status-bad">核验失败</span>':'待核验';return`${v}<br><small>原文：${esc(x.access_status==='accessible'?'可访问':x.access_status==='not_checked'?'未自动检查':x.access_status)}</small>${x.selected?'<br><span class="pill">已选择</span>':''}${x.excluded?'<br><span class="pill warn">已排除</span>':''}`}
+
+function shortTime(iso){
+  if(!iso)return '';
+  // "2026-11-15T19:14:42+08:00" → "11-15 19:14"
+  let m=String(iso).match(/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+  return m?`${m[2]}-${m[3]} ${m[4]}:${m[5]}`:iso;
+}
+function renderCandidate(x){return`<tr data-id="${esc(x.id)}" data-summary="${esc(x.summary||'')}" data-date="${esc(x.published_at||'')}" data-relevance="${esc(x.relevance||'')}"><td><strong>${esc(x.title)}</strong><br><small>${esc(categoryNames[x.category])} · ${esc(x.source_name)} · ${esc(x.published_at||'日期待补充')}</small><br>${x.url?`<a href="${esc(x.url)}" target="_blank" rel="noopener">查看原文</a>`:'<small>无原文链接</small>'}</td><td><label>发布时间 <span class="req">*</span><input class="candidateDate" type="date" value="${esc(x.published_at||'')}"></label><label>已核验摘要 <span class="req">*</span><textarea class="candidateSummary">${esc(x.summary||'')}</textarea></label><label>与SEI业务相关性<textarea class="candidateRelevance">${esc(x.relevance||'')}</textarea></label><label>核验说明<textarea class="candidateNotes">${esc(x.verification_notes||'')}</textarea></label><small>带 <span class="req">*</span> 的为“已核验”必填项</small></td><td>${candidateStatus(x)}<br>${x.verified_at?`<small class="verified-at">核验于 ${esc(shortTime(x.verified_at))}${x.audit_count?` · ${x.audit_count} 条记录`:''}</small><br>`:''}<select class="verifyState"><option value="pending" ${x.verification_status==='pending'?'selected':''}>待核验</option><option value="verified" ${x.verification_status==='verified'?'selected':''}>已核验</option><option value="failed" ${x.verification_status==='failed'?'selected':''}>核验失败</option></select><label><input class="manualConfirmed" type="checkbox"> 已人工打开原文并核对</label></td><td><button onclick="verifyCandidate('${x.id}')">保存核验</button><button class="secondary" onclick="candidateAction('${x.id}','${x.selected?'unselect':'select'}')">${x.selected?'取消选择':'采用'}</button><button class="danger" onclick="candidateAction('${x.id}','exclude')">排除</button></td></tr>`}
+async function loadCandidates(){try{let q=new URLSearchParams({category:$('candidateFilter').value,sort:$('candidateSort').value});let d=await api('/api/information/candidates?'+q);$('candidateRows').innerHTML=d.candidates.length?d.candidates.map(renderCandidate).join(''):'<tr><td colspan="4">候选信息池为空，可在上方补充公开新闻链接。</td></tr>'}catch(e){msg(e.message)}}
+function rowError(id,text){let tr=document.querySelector(`tr[data-id="${id}"]`);if(!tr)return;let cell=tr.querySelector('.rowError');if(!cell){cell=document.createElement('td');cell.className='rowError';cell.style.color='#9a2d2d';cell.style.fontSize='13px';tr.appendChild(cell)}cell.textContent=text;cell.scrollIntoView({block:'nearest'})}
+async function verifyCandidate(id){let tr=document.querySelector(`tr[data-id="${id}"]`);try{await api(`/api/information/candidate/${id}/update`,{action:'verify',status:tr.querySelector('.verifyState').value,published_at:tr.querySelector('.candidateDate').value,summary:tr.querySelector('.candidateSummary').value,relevance:tr.querySelector('.candidateRelevance').value,notes:tr.querySelector('.candidateNotes').value,manual_source_confirmed:tr.querySelector('.manualConfirmed').checked});await loadCandidates();msg('核验记录已保存')}catch(e){rowError(id,e.message);msg(e.message)}}
+async function candidateAction(id,action){try{
+  // BUG-1 修复：原先在 select 前会"自动再存一次核验"，
+  // 但 loadCandidates() 重绘后复选框已回到未勾选状态，
+  // 这次重存带着 manual_source_confirmed=false 发出去，必然 400，
+  // 导致用户明明已核验过、点"采用"却提示"请先勾选…"。
+  // 核验只由"保存核验"按钮负责，这里直接执行选择动作。
+  if(action==='select'){
+    let tr=document.querySelector(`tr[data-id="${id}"]`);
+    let st=tr?tr.querySelector('.verifyState').value:'';
+    let dirty=tr&&((tr.querySelector('.candidateSummary').value||'')!==(tr.dataset.summary||'')
+              ||(tr.querySelector('.candidateDate').value||'')!==(tr.dataset.date||'')
+              ||(tr.querySelector('.candidateRelevance').value||'')!==(tr.dataset.relevance||''));
+    if(dirty){
+      // 有未保存的修改时，提醒用户先保存，而不是替他猜
+      msg('这条信息有未保存的核验修改，请先点“保存核验”再采用');
+      return;
+    }
+    if(st!=='verified'){
+      msg('请先把核验状态设为“已核验”并点“保存核验”，再点“采用”');
+      return;
+    }
+  }
+  await api(`/api/information/candidate/${id}/update`,{action});await loadCandidates();
+  msg(action==='select'?'已选入《每日要情》候选':action==='unselect'?'已取消选择':'候选信息状态已更新')
+}catch(e){rowError(id,e.message);msg(e.message)}}
+function renderDailyItems(){if(!dailyBriefData)return;$('dailyItems').innerHTML=dailyBriefData.items.map((x,i)=>`<div class="daily-item" data-index="${i}"><div class="action-row"><strong>第 ${i+1} 条 · ${esc(categoryNames[x.category]||'已核验信息')}</strong><button class="secondary" onclick="moveDailyItem(${i},-1)">上移</button><button class="secondary" onclick="moveDailyItem(${i},1)">下移</button><button class="danger" onclick="removeDailyItem(${i})">删除</button></div><label>新闻标题<input class="dailyItemTitle" value="${esc(x.title)}"></label><label>正文<textarea class="dailyItemBody">${esc(x.body)}</textarea></label><p><small>来源：${esc(x.source_name)} ${x.url?'· <a href="'+esc(x.url)+'" target="_blank" rel="noopener">原文</a>':''}</small></p></div>`).join('')}
+function moveDailyItem(i,d){let n=i+d;if(!dailyBriefData||n<0||n>=dailyBriefData.items.length)return;[dailyBriefData.items[i],dailyBriefData.items[n]]=[dailyBriefData.items[n],dailyBriefData.items[i]];dailyBriefData.items.forEach((x,j)=>x.position=j+1);renderDailyItems()}function removeDailyItem(i){dailyBriefData.items.splice(i,1);dailyBriefData.items.forEach((x,j)=>x.position=j+1);renderDailyItems()}
+
+// D-1：日报与专报共用同一套核验数据。这里把候选池中"已核验"的信息带进专报素材，
+// 避免用户在两个板块里重复登记同样的来源。
+
+// ② 文稿润色 / ③ 信息专报 原本被 CSS 永久隐藏（display:none），
+// 页面上没有任何入口能显示它们，等于功能不存在。这里补上切换。
+// 真实发送是不可逆的外部动作，加二次确认，防止误触。
+function confirmRealSend(id){
+  if(!confirm('确认要真实发送这封邮件吗？\n\n这会立即把稿件发给已配置的真实收件人，无法撤回。\n\n如果只是测试，请点"模拟发送"。'))return;
+  emailAction(id,'send');
+}
+
+function showInfoSection(name){
+  // 真正的分区切换：一次只显示一个分区。
+  // 旧实现只处理 polish/special，daily/automation/dailyHistory 从不隐藏，
+  // 导致切换后多个分区同时可见，且 automation/dailyHistory 按钮点了没反应。
+  const SECS=["daily","polish","special","automation","dailyHistory"];
+
+  SECS.forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    el.style.display = (id===name) ? "" : "none";
+    el.classList.toggle("shown", id===name);
+  });
+
+  // #special 只包了一个标题，后面跟了若干独立 .card，需要一并显示/隐藏
+  const sp=document.getElementById("special");
+  if(sp){
+    let n=sp.nextElementSibling;
+    while(n){
+      if(n.tagName && n.tagName.toLowerCase()==="section") break;  // 到了下一个分区就停
+      if(n.classList && n.classList.contains("card")){
+        n.style.display = (name==="special") ? "" : "none";
+      }
+      n=n.nextElementSibling;
+    }
+  }
+
+  document.querySelectorAll(".section-nav a").forEach(a=>{
+    a.classList.toggle("hot", a.dataset.sec===name);
+  });
+
+  const target=document.getElementById(name);
+  if(target)target.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+async function importVerifiedCandidates(){
+  try{
+    let d=await api('/api/information/candidates');
+    let ok=(d.candidates||[]).filter(x=>x.verification_status==='verified');
+    if(!ok.length){ $('importHint').textContent='候选池里还没有“已核验”的信息，请先在①里完成核验'; return }
+    let blocks=ok.map((x,i)=>{
+      let sum=x.summary||x.original_excerpt||'';
+      return `${i+1}. ${x.title}\n${sum}${sum.endsWith('。')?'':'。'}（来源：${x.source_name||'未知'}\n链接：${x.url||'无'}）`;
+    });
+    let cur=$('body').value.trim();
+    $('body').value=(cur?cur+'\n\n':'')+blocks.join('\n\n');
+    if(!$('headline').value.trim()&&ok.length===1)$('headline').value=ok[0].title;
+    $('importHint').textContent=`已带入 ${ok.length} 条已核验信息，可继续编辑`;
+    msg(`已从候选池带入 ${ok.length} 条已核验信息`);
+  }catch(e){msg(e.message)}
+}
+
+async function generateDailyBrief(){try{
+  dailyBriefData=await api('/api/information/daily-brief/generate',{});
+  $('dailyTitle').value=dailyBriefData.brief.title;
+  renderDailyItems();
+  // D-3：明确告知每个类别只取 1 条，哪些被略过
+  let sk=dailyBriefData.skipped_candidates||[];
+  let box=$('dailySkipped');
+  if(!box){box=document.createElement('div');box.id='dailySkipped';box.className='daily-skipped';
+    $('dailyItems').parentElement.insertBefore(box,$('dailyItems'));}
+  box.innerHTML=sk.length
+    ? `<strong>注意：有 ${sk.length} 条已选信息未采用</strong><ul>${sk.map(x=>`<li>${esc(x.category)}：${esc(x.title)}<br><small>${esc(x.reason)}</small></li>`).join('')}</ul>`
+    : '';
+  $('dailyBriefResult').style.display='block';
+  $('dailyBriefResult').scrollIntoView({behavior:'smooth'});
+  msg(sk.length?`初稿已生成；有 ${sk.length} 条因“每类只取1条”未采用`:'《每日要情》初稿已生成，可人工编辑、排序或删除条目')
+}catch(e){msg(e.message)}}
+function collectDailyBrief(){dailyBriefData.brief.title=$('dailyTitle').value.trim()||'《每日要情》';[...$('dailyItems').querySelectorAll('.daily-item')].forEach((node,i)=>{dailyBriefData.items[i].position=i+1;dailyBriefData.items[i].title=node.querySelector('.dailyItemTitle').value.trim();dailyBriefData.items[i].body=node.querySelector('.dailyItemBody').value.trim()});return dailyBriefData}
+async function exportDailyBrief(){if(!dailyBriefData)return msg('请先生成《每日要情》初稿');try{let d=await api('/api/information/daily-brief/export',{data:collectDailyBrief()});downloadB64(d.filename,d.base64);msg('已导出可编辑Word初稿')}catch(e){msg(e.message)}}
+async function importPolishFile(){let file=$('polishFile').files[0];if(!file)return;try{let bytes=new Uint8Array(await file.arrayBuffer()),binary='';for(let i=0;i<bytes.length;i++)binary+=String.fromCharCode(bytes[i]);let d=await api('/api/information/text/import',{filename:file.name,base64:btoa(binary)});$('polishOriginal').value=d.text;msg('文稿已导入，请先运行本地检查')}catch(e){msg(e.message)}}
+function showPolish(d){polishData=d;$('polishComparedOriginal').value=d.original||$('polishOriginal').value;$('polishRevised').value=d.revised||'';$('polishNotes').value=[...(d.change_notes||[]),...(d.issues||[]),d.protected_fact_notice||''].filter(Boolean).join('\n');$('polishResult').style.display='block';$('polishResult').scrollIntoView({behavior:'smooth'})}
+async function localPolishReview(){try{showPolish(await api('/api/information/text/local-review',{text:$('polishOriginal').value}));msg('本地检查完成，未调用模型')}catch(e){msg(e.message)}}
+async function aiPolishReview(){if(!$('polishConsent').checked)return msg('请先确认文稿为非涉密并可发送至集团模型');$('polishAiButton').disabled=true;try{let d=await api('/api/ai/information-polish',{confirmed_for_model:true,fields:{text:$('polishOriginal').value,instruction:$('polishInstruction').value,confidentiality:'非涉密'}});showPolish(d);msg(d.suggestion_ready?'AI润色建议已生成，尚未覆盖原文':'模型可能改动了受保护事实，已禁止直接采用')}catch(e){msg(e.message)}finally{await loadAiStatus()}}
+async function copyPolishResult(){try{await navigator.clipboard.writeText($('polishRevised').value);msg('修改后文本已复制')}catch(e){msg('浏览器未允许自动复制，请手动选择文本复制')}}
+async function exportPolishResult(){try{let notes=$('polishNotes').value.split('\n').filter(Boolean),d=await api('/api/information/text/export',{original:$('polishComparedOriginal').value,revised:$('polishRevised').value,change_notes:notes});downloadB64(d.filename,d.base64);msg('修改对照Word已导出')}catch(e){msg(e.message)}}
+async function loadAiStatus(){try{let d=await api('/api/ai/status');$('aiStatus').textContent=d.configured?`已配置，尚未测试当前连接 · ${d.model}`:`未配置 SEI_API_KEY · 预设模型 ${d.model}`;$('aiAnalyzeButton').disabled=!d.configured;$('aiTestButton').disabled=!d.configured;$('polishAiButton').disabled=!d.configured}catch(e){$('aiStatus').textContent=e.message;$('aiAnalyzeButton').disabled=true;$('aiTestButton').disabled=true;$('polishAiButton').disabled=true}}
+async function testAiConnection(){$('aiTestButton').disabled=true;$('aiStatus').textContent='正在测试当前连接……';try{let d=await api('/api/ai/test-connection',{});$('aiStatus').textContent=`连接成功 · ${d.model}`;msg(d.message)}catch(e){$('aiStatus').textContent=`当前连接不可用 · ${e.message}`;msg(e.message)}finally{$('aiTestButton').disabled=false}}
+function renumberSources(){[...$('sourceRows').querySelectorAll('tr')].forEach((tr,i)=>tr.querySelector('.sourceIndex').textContent=`来源 ${i+1}`)}function removeSource(button){button.closest('tr').remove();renumberSources()}function addSource(v={}){let tr=document.createElement('tr');tr.innerHTML=`<td class="sourceIndex"></td><td><input class="name" value="${esc(v.name||'')}"></td><td><input class="url" type="url" value="${esc(v.url||'')}"></td><td><input class="date" type="date" value="${esc(v.published_at||'')}"></td><td><textarea class="excerpt">${esc(v.excerpt||'')}</textarea></td><td><input class="verified" type="checkbox" aria-label="责任人已核验" ${v.verified?'checked':''}></td><td><button class="secondary" onclick="removeSource(this)">删除</button></td>`;$('sourceRows').appendChild(tr);renumberSources()}function addCitation(v={}){let tr=document.createElement('tr');tr.innerHTML=`<td><input class="sourceNo" type="number" min="1" value="${esc(v.source_no||1)}" style="width:60px"></td><td><textarea class="claim">${esc(v.claim||'')}</textarea></td><td><textarea class="quote">${esc(v.evidence_quote||'')}</textarea></td><td><button class="secondary" onclick="this.closest('tr').remove()">删除</button></td>`;$('citationRows').appendChild(tr)}
+function collect(){let sources=[...$('sourceRows').querySelectorAll('tr')].map(tr=>({name:tr.querySelector('.name').value.trim(),url:tr.querySelector('.url').value.trim(),published_at:tr.querySelector('.date').value,excerpt:tr.querySelector('.excerpt').value.trim(),verified:tr.querySelector('.verified').checked})).filter(x=>x.name||x.url||x.excerpt);let citations=[...$('citationRows').querySelectorAll('tr')].map(tr=>({source_no:Number(tr.querySelector('.sourceNo').value),claim:tr.querySelector('.claim').value.trim(),evidence_quote:tr.querySelector('.quote').value.trim()})).filter(x=>x.claim||x.evidence_quote);let metadata={document_type:$('documentType').value,series_title:$('seriesTitle').value.trim(),issue_no:$('issueNo').value.trim(),publication_date:$('publicationDate').value,issuing_unit:$('issuingUnit').value.trim(),contact_name:$('contactName').value.trim(),contact_phone:$('contactPhone').value.trim(),contact_email:$('contactEmail').value.trim(),report_to:$('reportTo').value.trim()};return{headline:$('headline').value.trim(),body:$('body').value.trim(),metadata,sources,citations}}
+async function analyzeWithAi(){if(!tid)return msg('请先创建或打开任务');if(!$('aiConsent').checked)return msg('请先确认素材和已核验来源摘录为非涉密且可发送至集团大模型');let draft=collect(),fields={category:$('category').value.trim(),document_type:draft.metadata.document_type,headline:draft.headline,body:draft.body,sources:draft.sources};$('aiAnalyzeButton').disabled=true;$('aiAdoptButton').style.display='none';msg('正在按SEI专报文风生成初稿……');try{let d=await api('/api/ai/information-analysis',{confirmed_for_model:true,fields});window.aiInformationSuggestion=d;$('aiAnalysisText').value=d.summary||'';$('aiKeyPoints').value=(d.key_points||[]).map((x,i)=>`${i+1}. ${x}`).join('\n');$('aiRelevance').value=d.relevance||'';$('aiMissingFacts').value=(d.missing_facts||[]).map((x,i)=>`${i+1}. ${x}`).join('\n')||'未发现模型主动标记的缺项，仍需责任人复核';$('aiQualityChecks').value=[d.style_applied||'',...(d.quality_checks||[]).map((x,i)=>`${i+1}. ${x}`)].filter(Boolean).join('\n');$('aiSuggestedHeadline').value=d.suggested_headline||'';$('aiSuggestedBody').value=d.suggested_body||'';$('aiMeta').textContent=`模型：${d.model} · 已核验来源：${d.verified_source_count} 条 · Token：${d.usage.total_tokens??'未返回'}`;$('aiResult').style.display='block';$('aiAdoptButton').style.display=d.suggestion_ready?'inline-block':'none';$('aiResult').scrollIntoView({behavior:'smooth'});msg(d.suggestion_ready?'已按SEI专报范文生成建议稿，尚未写入或发布':'模型返回格式或来源引用不完整，已保留分析内容但禁止载入')}catch(e){msg(e.message)}finally{await loadAiStatus()}}
+function adoptAiInformation(){let d=window.aiInformationSuggestion;if(!d||!d.suggestion_ready)return msg('当前没有可载入的完整建议稿');if(!confirm('确认将建议标题和正文载入编辑区？来源和观点对应关系仍需人工复核。'))return;$('headline').value=d.suggested_headline;$('body').value=d.suggested_body;pending=null;$('review').style.display='none';$('aiMeta').textContent+=' · 已载入编辑区，尚未保存';msg('建议稿已载入编辑区。请核对来源编号和观点对应关系，再点击“预览并检查”')}
+async function refresh(){let d=await api('/api/information/task/'+tid),verified=d.sources.filter(x=>x.verified).length,missing=[],m=d.draft?.metadata||{};$('summary').innerHTML=`<p><strong>${esc(d.task.title)}</strong> · 版本 ${d.task.revision} · ${esc(d.task.category||'未分类')}</p>`;$('taskTitle').value=d.task.title;if([...$('category').options].some(x=>x.value===d.task.category))$('category').value=d.task.category;$('headline').value=d.draft?.headline||'';$('body').value=d.draft?.body||'';$('documentType').value=m.document_type||'project_milestone';$('seriesTitle').value=m.series_title||'石化信息';$('issueNo').value=m.issue_no||'';$('publicationDate').value=m.publication_date||'';$('issuingUnit').value=m.issuing_unit||'工程建设公司';$('contactName').value=m.contact_name||'';$('contactPhone').value=m.contact_phone||'';$('contactEmail').value=m.contact_email||'';$('reportTo').value=m.report_to||'中国石油化工集团有限公司综合管理部';if(!d.draft?.headline)missing.push('信息标题');if(!d.draft?.body)missing.push('正文');if(!d.sources.length)missing.push('事实来源');else if(verified<d.sources.length)missing.push(`${d.sources.length-verified}条来源待核验`);if(!d.citations.length)missing.push('观点与来源对应关系');let next=missing.length?`建议下一步：补充${missing[0]}。`:'初稿、来源和观点对应关系已就绪，可进行预览检查。';$('readiness').innerHTML=`<div class="readiness"><strong>${esc(next)}</strong>${missing.map(x=>`<span class="pill warn">待处理：${esc(x)}</span>`).join('')}<span class="pill">来源 ${d.sources.length} 条</span><span class="pill">已核验 ${verified} 条</span><span class="pill">观点对应 ${d.citations.length} 条</span></div>`;$('sourceRows').innerHTML='';(d.sources.length?d.sources:[{}]).forEach(x=>addSource(x));$('citationRows').innerHTML='';let sourceNo=Object.fromEntries(d.sources.map(x=>[x.id,x.source_no]));(d.citations.length?d.citations:[{}]).forEach(x=>addCitation({...x,source_no:sourceNo[x.source_id]||1}));await refreshHistory()}
+async function previewDraft(){if(!tid)return msg('请先创建或打开任务');try{let payload=collect(),d=await api('/api/information/task/'+tid+'/preview',{payload});pending={payload,revision:d.revision,token:d.token};$('reviewContent').innerHTML=`<p><strong>${esc(d.draft.headline)}</strong></p><p>来源 ${d.draft.sources.length} 条，观点对应 ${d.draft.citations.length} 条。</p><p>${d.findings.map(x=>`${x.level==='error'?'阻断':'提醒'}：${esc(x.message)}`).join('<br>')||'未发现缺项'}</p><p><small>确认只表示保存为受控初稿，不代表已发布。</small></p>`;$('confirmButton').disabled=!d.can_confirm;$('review').style.display='block';$('review').scrollIntoView({behavior:'smooth'});msg('请人工复核后确认')}catch(e){msg(e.message)}}async function confirmDraft(){if(!pending)return;try{let d=await api('/api/information/task/'+tid+'/commit',pending);pending=null;$('review').style.display='none';await loadTasks();await refresh();msg(d.message)}catch(e){msg(e.message)}}function cancelReview(){pending=null;$('review').style.display='none';msg('已返回修改，原数据未变')}
+async function refreshHistory(){let d=await api('/api/information/task/'+tid+'/history');let rows=d.materials.map(x=>`<tr><td>v${x.revision}</td><td>${esc(new Date(x.created_at).toLocaleString())}</td><td><a href="/api/information/material/${encodeURIComponent(x.id)}">下载该版材料</a></td></tr>`).join('');$('history').innerHTML=rows?`<table><thead><tr><th>版本</th><th>保存时间</th><th>材料</th></tr></thead><tbody>${rows}</tbody></table>`:'尚无已确认版本。'}
+function checkedValues(selector){return[...document.querySelectorAll(selector+':checked')].map(x=>x.value)}
+function parseRecipients(){return $('emailRecipients').value.split(/\n+/).map(x=>x.trim()).filter(Boolean).map(x=>({email:x.replace(/^cc:/i,'').trim(),recipient_type:/^cc:/i.test(x)?'cc':'to',enabled:true}))}
+async function loadAutomation(){try{let d=await api('/api/information/automation/settings');$('autoEnabled').value=String(d.enabled);$('autoTimezone').value=d.timezone;$('autoCollectTime').value=d.collect_time;$('autoLimit').value=d.collect_limit;$('autoGenerate').checked=!!d.auto_generate;$('autoEmailEnabled').checked=!!d.email_enabled;$('autoEmailTime').value=d.email_send_time;$('smtpHost').value=d.smtp_host;$('smtpPort').value=d.smtp_port;$('smtpEncryption').value=d.encryption;$('smtpUsername').value=d.smtp_username;$('senderEmail').value=d.sender_email;$('subjectTemplate').value=d.subject_template;document.querySelectorAll('.autoWeekday').forEach(x=>x.checked=d.weekdays.includes(Number(x.value)));document.querySelectorAll('.autoCategory').forEach(x=>x.checked=d.categories.includes(x.value));$('emailRecipients').value=d.recipients.filter(x=>x.enabled).map(x=>(x.recipient_type==='cc'?'cc:':'')+x.email).join('\n');$('credentialStatus').textContent=d.credential_configured?(d.real_send_enabled?'本机已配置邮件凭据并明确启用真实发送。':'本机已有邮件凭据，但真实发送开关仍关闭；当前只能模拟发送。'):'尚未在本机安全配置邮件密码；当前只能保存设置和模拟流程。'}catch(e){$('credentialStatus').textContent=e.message}}
+function automationPayload(){return{enabled:$('autoEnabled').value==='1',timezone:$('autoTimezone').value,collect_time:$('autoCollectTime').value,collect_limit:Number($('autoLimit').value),weekdays:checkedValues('.autoWeekday').map(Number),categories:checkedValues('.autoCategory'),auto_generate:$('autoGenerate').checked,email_enabled:$('autoEmailEnabled').checked,email_send_time:$('autoEmailTime').value,review_required:true,smtp_host:$('smtpHost').value,smtp_port:Number($('smtpPort').value),encryption:$('smtpEncryption').value,smtp_username:$('smtpUsername').value,sender_email:$('senderEmail').value,subject_template:$('subjectTemplate').value,body_mode:'full',attachment_format:'docx',recipients:parseRecipients()}}
+async function saveAutomation(){try{await api('/api/information/automation/settings',automationPayload());await loadAutomation();msg('自动化设置已保存在本机；没有发送任何邮件')}catch(e){msg(e.message)}}
+async function runAutomationNow(){try{msg('正在按当前设置采集公开订阅源……');let d=await api('/api/information/automation/run',{});await loadCandidates();await loadAutomationHistory();msg(`采集完成：新增 ${d.collection.added} 条，跳过 ${d.collection.skipped} 条；${d.run.status==='needs_attention'?'初稿条件不足，已转人工处理':'任务已留痕'}`)}catch(e){msg(e.message)}}
+async function emailAction(id,action){try{await api(`/api/information/email-job/${id}/${action}`,{});await loadAutomationHistory();msg(action==='approve'?'邮件已人工审核通过，尚未发送':action==='simulate'?'模拟发送完成，没有连接真实邮箱':'邮件发送流程已执行')}catch(e){msg(e.message)}}
+async function loadAutomationHistory(){try{let d=await api('/api/information/automation/history'),runs=d.runs.map(x=>`<tr><td>${esc(x.scheduled_date)}</td><td>${esc(x.trigger_type==='manual'?'手动':'定时')}</td><td>${esc(x.status)}</td><td>${x.collected_count}</td><td>${esc(x.error_message||'—')}</td></tr>`).join(''),jobs=d.email_jobs.map(x=>`<tr><td>${esc(x.subject)}</td><td>${esc(x.review_status)}</td><td>${esc(x.send_status)}</td><td><button class="secondary" onclick="emailAction('${x.id}','approve')">审核通过</button><button class="secondary" onclick="emailAction('${x.id}','simulate')">模拟发送</button>${x.review_status==='approved'&&x.send_status==='pending'?`<button class="danger" onclick="confirmRealSend('${x.id}')">真实发送</button>`:''}</td></tr>`).join('');$('automationHistory').innerHTML=`<h3>采集记录</h3><table><thead><tr><th>日期</th><th>方式</th><th>状态</th><th>新增</th><th>说明</th></tr></thead><tbody>${runs||'<tr><td colspan="5">暂无记录</td></tr>'}</tbody></table><h3>邮件任务</h3><table><thead><tr><th>主题</th><th>审核</th><th>发送</th><th>操作</th></tr></thead><tbody>${jobs||'<tr><td colspan="4">暂无邮件任务</td></tr>'}</tbody></table>`}catch(e){$('automationHistory').textContent=e.message}}
+loadAiStatus();loadSourceRegistry();loadCandidates();loadAutomation();loadAutomationHistory();loadTasks().then(()=>tid&&refresh()).catch(e=>msg(e.message));
+// 初始只显示“候选池与日报”，其余分区隐藏，避免一进页面就看到 3.8 屏内容
+showInfoSection('daily');
+</script></body></html>

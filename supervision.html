@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<script src="demo-shim.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>督办事项 · 综智助手</title>
+<style>
+*{box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;color:#1f2d3d;background:#f4f6f9;margin:0;font-size:14px}
+header{background:#12325a;color:#fff;padding:14px 26px;display:flex;align-items:center;gap:22px}
+header h1{font-size:17px;margin:0;font-weight:650}
+header nav{display:flex;gap:4px;margin-left:auto}
+header nav a{color:#c8d8ea;text-decoration:none;padding:6px 12px;border-radius:7px;font-size:13.5px}
+header nav a:hover{background:#1d4470;color:#fff}
+header nav a.on{background:#2563a8;color:#fff;font-weight:600}
+main{max-width:1180px;margin:22px auto 60px;padding:0 20px}
+.card{background:#fff;border:1px solid #dde5ee;border-radius:12px;padding:18px 20px;margin-bottom:16px;box-shadow:0 1px 3px #1a2b4410}
+.card h2{font-size:15.5px;margin:0 0 4px;color:#12325a}
+.card p.hint{color:#6b7c93;font-size:12.5px;margin:0 0 14px;line-height:1.6}
+label{display:block;font-size:13px;font-weight:600;color:#3b4d63;margin:10px 0 5px}
+label .req{color:#c62828}
+label .opt{color:#8496ab;font-weight:400;font-size:12px}
+input,select,textarea{width:100%;padding:8px 10px;border:1px solid #c8d4e0;border-radius:8px;font-size:13.5px;font-family:inherit;background:#fff}
+input:focus,select:focus,textarea:focus{outline:2px solid #93b8e0;border-color:#4a86c8}
+textarea{resize:vertical;min-height:64px;line-height:1.65}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:0 16px}
+.counter{font-size:11.5px;color:#8496ab;text-align:right;margin-top:3px}
+.counter.over{color:#c62828;font-weight:700}
+button{padding:9px 18px;border-radius:8px;border:1px solid #c8d4e0;background:#fff;color:#2c3e50;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit}
+button:hover{background:#f0f4f9}
+button.primary{background:#1a5fa8;border-color:#1a5fa8;color:#fff}
+button.primary:hover{background:#154d8a}
+button.danger{color:#c62828;border-color:#eab8b8}
+button:disabled{opacity:.5;cursor:not-allowed}
+.item{border:1px solid #e3eaf2;border-radius:10px;padding:14px 16px;margin-bottom:14px;background:#fbfcfe}
+.item-head{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.item-no{background:#1a5fa8;color:#fff;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:12.5px;font-weight:700;flex:none}
+.item-head .grow{flex:1}
+.stages{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:10px;margin-top:8px}
+.stage{border:1px dashed #cbd8e6;border-radius:8px;padding:8px 10px;background:#fff}
+.stage b{font-size:12px;color:#1a5fa8;display:block;margin-bottom:5px}
+.stage input,.stage textarea{font-size:12.5px;padding:5px 7px}
+.msgs{list-style:none;padding:0;margin:10px 0 0;font-size:13px;line-height:1.85}
+.msgs li.err{color:#b42318}
+.msgs li.warn{color:#a1660a}
+.msgs li.ok{color:#1a7f37}
+.badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:12px;font-weight:700}
+.badge.ok{background:#e5f5ea;color:#1a7f37}
+.badge.bad{background:#fdecec;color:#b42318}
+.badge.wait{background:#eef2f7;color:#6b7c93}
+.actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:6px}
+.actions .status{font-size:12.5px;color:#6b7c93}
+table.units{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}
+table.units th,table.units td{border:1px solid #e3eaf2;padding:5px 8px;text-align:left}
+table.units th{background:#eff4fa;font-weight:650}
+.details summary{cursor:pointer;color:#1a5fa8;font-size:13px;font-weight:600;padding:4px 0}
+</style>
+</head>
+<body>
+<header>
+  <h1>综智助手 · 督办事项</h1>
+  <nav>
+    <a href="workbench.html">工作台</a>
+    <a href="meeting.html">会务助手</a>
+    <a href="information.html">每日要情</a>
+    <a href="official_documents.html">公文助手</a>
+    <a href="knowledge.html">知识库</a>
+    <a href="supervision.html" class="on">督办事项</a>
+  </nav>
+</header>
+
+<main>
+  <div class="card">
+    <h2>填写督办事项</h2>
+    <p class="hint">
+      按贵单位「导入模板表」的格式填写，导出后可直接导入督办系统。
+      字数上限、分类、分管领导、单位名称均与模板保持一致，填写时实时校验。
+    </p>
+    <div id="items"></div>
+    <div class="actions">
+      <button onclick="addItem()">+ 添加一条督办事项</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>校验结果 <span id="checkBadge" class="badge wait">待校验</span></h2>
+    <p class="hint">有任何阻断问题时无法导出，请按提示修正后重试。</p>
+    <ul id="msgs" class="msgs"><li class="warn">尚未填写内容</li></ul>
+    <div class="actions">
+      <button class="primary" id="exportBtn" onclick="doExport()" disabled>导出可导入的 Excel</button>
+      <button onclick="validate()">重新校验</button>
+      <span class="status" id="status"></span>
+    </div>
+  </div>
+
+  <div class="card">
+    <details class="details">
+      <summary>查看模板允许的单位名称与填写规则</summary>
+      <p class="hint" style="margin-top:10px">
+        主办单位只能填一个；协办单位多个用顿号「、」分隔。单位全称与简称均可填写。
+      </p>
+      <table class="units" id="unitTable"><thead><tr><th>单位全称</th><th>单位简称</th></tr></thead><tbody></tbody></table>
+    </details>
+  </div>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const LIMITS = {"督办事项":100,"事项内容":1000,"工作计划及目标":500,"阶段目标":500};
+const STAGE_COUNT = 12;
+let OPTIONS = {categories:[], leaders:[], units:[]};
+let lastCheck = {ok:false, errors:[], warnings:[]};
+
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+
+async function api(path, body){
+  const opt = body===undefined ? {headers:{"Content-Type":"application/json"}}
+                               : {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)};
+  const r = await fetch(path, opt);
+  const t = await r.text();
+  let d; try{ d = JSON.parse(t); }catch(_){ throw new Error("服务返回异常：" + t.slice(0,120)); }
+  if(!r.ok) throw new Error(d.error || "请求失败");
+  return d;
+}
+
+let seq = 0;
+function addItem(data){
+  const n = ++seq;
+  const d = data || {};
+  const el = document.createElement("div");
+  el.className = "item"; el.dataset.id = n;
+  el.innerHTML = `
+    <div class="item-head">
+      <span class="item-no">${document.querySelectorAll('.item').length + 1}</span>
+      <span class="grow"></span>
+      <button class="danger" onclick="this.closest('.item').remove();renumber();validate()">删除</button>
+    </div>
+    <div class="row">
+      <div>
+        <label>督办分类 <span class="req">*</span></label>
+        <select class="f-category">${OPTIONS.categories.map(c=>`<option ${d.category===c?'selected':''}>${esc(c)}</option>`).join("")}</select>
+      </div>
+      <div>
+        <label>分管领导 <span class="opt">可多选，用顿号分隔</span></label>
+        <input class="f-leader" list="leaderList" value="${esc(d.leader||"")}" placeholder="如：钱示例">
+      </div>
+      <div>
+        <label>是否需要补充</label>
+        <select class="f-need"><option>不需要</option><option ${d.need_supplement==="需要"?'selected':''}>需要</option></select>
+      </div>
+      <div>
+        <label>补充截止日期 <span class="opt">选“需要”时必填</span></label>
+        <input class="f-supdate" type="date" value="${esc(d.supplement_deadline||"")}">
+      </div>
+    </div>
+    <label>督办事项 <span class="req">*</span> <span class="opt">≤${LIMITS["督办事项"]}字</span></label>
+    <input class="f-matter" value="${esc(d.matter||"")}" placeholder="如：2026年7月21日《××会议纪要》第1条：……">
+    <div class="counter" data-for="f-matter">0 / ${LIMITS["督办事项"]}</div>
+    <label>事项内容 <span class="opt">≤${LIMITS["事项内容"]}字</span></label>
+    <textarea class="f-content" placeholder="事项的完整描述">${esc(d.content||"")}</textarea>
+    <div class="counter" data-for="f-content">0 / ${LIMITS["事项内容"]}</div>
+    <label>工作计划及目标 <span class="opt">≤${LIMITS["工作计划及目标"]}字</span></label>
+    <textarea class="f-plan" style="min-height:52px">${esc(d.plan||"")}</textarea>
+    <div class="counter" data-for="f-plan">0 / ${LIMITS["工作计划及目标"]}</div>
+    <div class="row">
+      <div>
+        <label>主办单位 <span class="req">*</span> <span class="opt">只能一个</span></label>
+        <input class="f-main" list="unitList" value="${esc(d.main_unit||"")}" placeholder="如：数字工程部">
+      </div>
+      <div>
+        <label>协办单位 <span class="opt">多个用顿号分隔</span></label>
+        <input class="f-co" list="unitList" value="${esc((d.co_units||[]).join("、"))}" placeholder="如：各项目组、设计部">
+      </div>
+      <div>
+        <label>限办时间</label>
+        <input class="f-deadline" type="date" value="${esc(d.deadline||"")}">
+      </div>
+    </div>
+    <label>阶段节点 <span class="opt">最后一阶段的节点时间必须等于限办时间；不填则不导出阶段</span></label>
+    <div class="stages">${Array.from({length:STAGE_COUNT},(_,i)=>`
+      <div class="stage">
+        <b>${i+1}阶段</b>
+        <input class="f-node" type="date" title="节点时间">
+        <textarea class="f-goal" placeholder="阶段目标" style="margin-top:5px;min-height:42px"></textarea>
+      </div>`).join("")}</div>`;
+  $("items").appendChild(el);
+  bindItem(el);
+  if(d.stages) d.stages.forEach((s,i)=>{
+    const st = el.querySelectorAll(".stage")[i];
+    if(!st) return;
+    st.querySelector(".f-node").value = s.node_time || "";
+    st.querySelector(".f-goal").value = s.goal || "";
+  });
+  refreshCounters(el);
+  renumber();
+}
+
+function bindItem(el){
+  el.querySelectorAll("input,textarea,select").forEach(x=>{
+    x.addEventListener("input", ()=>{ refreshCounters(el); scheduleValidate(); });
+    x.addEventListener("change", ()=>scheduleValidate());
+  });
+  el.querySelector(".f-need").addEventListener("change", e=>{
+    const on = e.target.value === "需要";
+    el.querySelector(".f-supdate").disabled = !on;
+    if(!on) el.querySelector(".f-supdate").value = "";
+  });
+}
+
+function refreshCounters(el){
+  el.querySelectorAll(".counter").forEach(c=>{
+    const input = el.querySelector("." + c.dataset.for);
+    if(!input) return;
+    const max = parseInt(c.textContent.split("/")[1]) || 0;
+    const len = input.value.length;
+    c.textContent = len + " / " + max;
+    c.classList.toggle("over", len > max);
+  });
+}
+
+function renumber(){
+  document.querySelectorAll(".item").forEach((el,i)=>{
+    el.querySelector(".item-no").textContent = i + 1;
+  });
+}
+
+function collect(){
+  return [...document.querySelectorAll(".item")].map(el=>{
+    const stages = [...el.querySelectorAll(".stage")].map(st=>({
+      node_time: st.querySelector(".f-node").value,
+      goal: st.querySelector(".f-goal").value.trim()
+    })).filter(s=>s.node_time || s.goal);
+    return {
+      category: el.querySelector(".f-category").value,
+      matter: el.querySelector(".f-matter").value.trim(),
+      content: el.querySelector(".f-content").value.trim(),
+      leader: el.querySelector(".f-leader").value.trim(),
+      need_supplement: el.querySelector(".f-need").value,
+      supplement_deadline: el.querySelector(".f-supdate").value,
+      plan: el.querySelector(".f-plan").value.trim(),
+      main_unit: el.querySelector(".f-main").value.trim(),
+      co_units: el.querySelector(".f-co").value.split(/[、,，]/).map(x=>x.trim()).filter(Boolean),
+      deadline: el.querySelector(".f-deadline").value,
+      stages
+    };
+  });
+}
+
+let timer = null;
+function scheduleValidate(){ clearTimeout(timer); timer = setTimeout(validate, 500); }
+
+async function validate(){
+  const items = collect();
+  const badge = $("checkBadge"), msgs = $("msgs"), btn = $("exportBtn");
+  if(!items.length){
+    badge.className = "badge wait"; badge.textContent = "待校验";
+    msgs.innerHTML = '<li class="warn">尚未填写内容</li>';
+    btn.disabled = true; lastCheck = {ok:false}; return;
+  }
+  try{
+    const r = await api("/api/supervision/validate", {items});
+    lastCheck = r;
+    const errs = r.errors || [], warns = r.warnings || [];
+    if(r.ok){
+      badge.className = "badge ok"; badge.textContent = "校验通过";
+    }else{
+      badge.className = "badge bad"; badge.textContent = `${errs.length} 个问题`;
+    }
+    msgs.innerHTML =
+      (errs.length ? errs.map(e=>`<li class="err">✗ ${esc(e)}</li>`).join("") : "") +
+      (warns.length ? warns.map(w=>`<li class="warn">! ${esc(w)}</li>`).join("") : "") +
+      (r.ok && !warns.length ? `<li class="ok">✓ ${items.length} 条督办事项全部符合模板规则，可以导出</li>` : "");
+    btn.disabled = !r.ok;
+  }catch(e){
+    badge.className = "badge bad"; badge.textContent = "校验失败";
+    msgs.innerHTML = `<li class="err">✗ ${esc(e.message)}</li>`;
+    btn.disabled = true;
+  }
+}
+
+async function doExport(){
+  const items = collect();
+  $("status").textContent = "正在生成，请稍候……";
+  try{
+    const r = await fetch("/api/supervision/export", {
+      method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({items})
+    });
+    if(!r.ok){
+      const t = await r.text();
+      let m = "导出失败"; try{ m = JSON.parse(t).error || m; }catch(_){}
+      throw new Error(m);
+    }
+    const blob = await r.blob();
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "督办事项导入表_" + new Date().toISOString().slice(0,10) + ".xlsx";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+    $("status").textContent = "已生成并开始下载";
+  }catch(e){
+    $("status").textContent = "";
+    alert("导出失败：" + e.message);
+  }
+}
+
+(async function init(){
+  try{
+    OPTIONS = await api("/api/supervision/options");
+    if(OPTIONS.limits) Object.assign(LIMITS, OPTIONS.limits);
+    if(OPTIONS.stage_count) window.STAGE_COUNT = OPTIONS.stage_count;
+    const dl = document.createElement("datalist"); dl.id = "leaderList";
+    dl.innerHTML = OPTIONS.leaders.map(l=>`<option value="${esc(l)}">`).join("");
+    document.body.appendChild(dl);
+    const du = document.createElement("datalist"); du.id = "unitList";
+    const seen = new Set();
+    du.innerHTML = OPTIONS.units.flatMap(u=>[u.full,u.short]).filter(x=>{
+      if(seen.has(x)) return false; seen.add(x); return true;
+    }).map(x=>`<option value="${esc(x)}">`).join("");
+    document.body.appendChild(du);
+    const tb = $("unitTable").querySelector("tbody");
+    tb.innerHTML = OPTIONS.units.map(u=>`<tr><td>${esc(u.full)}</td><td>${esc(u.short)}</td></tr>`).join("");
+  }catch(e){
+    $("msgs").innerHTML = `<li class="err">✗ 读取模板配置失败：${esc(e.message)}</li>`;
+  }
+  addItem();
+})();
+</script>
+</body>
+</html>

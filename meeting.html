@@ -1,0 +1,425 @@
+<!doctype html><html lang="zh-CN"><head>
+<script src="demo-shim.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>会务助手</title><style>
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;color:#203246;background:#f3f6f8;margin:0}main{max-width:1100px;margin:36px auto;padding:0 18px}h1{font-size:28px}h2{font-size:19px;margin-top:0}.card{background:white;border:1px solid #dce4eb;border-radius:12px;padding:22px;margin:18px 0;box-shadow:0 4px 16px #2032460a}input,select,textarea,button{font:inherit;padding:9px;border:1px solid #aebdca;border-radius:6px}textarea{min-height:72px;resize:vertical}button{background:#164e79;color:white;border:0;cursor:pointer;margin:4px}button:disabled{background:#9eabb7;cursor:not-allowed}.secondary{background:#e8eef4;color:#203246}table{border-collapse:collapse;width:100%;font-size:14px}td,th{border-bottom:1px solid #e3e9ee;padding:9px;text-align:left}th{background:#eef3f7}#message{white-space:pre-wrap;color:#a33}#preview,#personEditor,#intakeResult{display:none}small{color:#687989}label{display:inline-block;margin:4px 8px 4px 0}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.grid label{display:flex;flex-direction:column;gap:5px}.wide{grid-column:1/-1}.scroll{overflow:auto}.meeting-picker{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.meeting-picker select{min-width:320px;max-width:100%}.divider{border:0;border-top:1px solid #e1e8ed;margin:20px 0}.advanced-id summary{cursor:pointer;color:#687989;font-size:13px}.readiness{margin-top:16px;padding:16px;border-radius:10px;background:#f0f6f9;border-left:4px solid #2e789e}.readiness strong{display:block;margin-bottom:7px}.pill{display:inline-block;background:#e1ebf1;color:#31566d;border-radius:999px;padding:4px 9px;margin:3px 4px 0 0;font-size:12px}.pill.warn{background:#fff0d5;color:#815716}.person-editor{background:#f5f8fa;border:1px solid #d8e2e8;border-radius:10px;padding:17px;margin:12px 0 18px}.person-editor h3{margin:0 0 12px}.intake-card{border-left:4px solid #2e789e}.intake-card>textarea{width:calc(100% - 20px);min-height:150px}.intake-findings{color:#8a4f12}.intake-people input,.intake-people select{max-width:180px}.ai-card{border-left:4px solid #6b63a9;background:linear-gradient(135deg,#fff,#f7f5ff)}.model-status{display:inline-block;border-radius:999px;background:#ebe8f8;color:#514a87;padding:5px 10px;font-size:12px}.consent{display:flex;align-items:flex-start;gap:8px;background:#fff8e8;border:1px solid #efd9a8;border-radius:8px;padding:11px;margin:12px 0}.consent input{margin-top:3px}.ai-output{display:none;margin-top:14px}.ai-output textarea{width:100%;min-height:220px;background:white}@media(max-width:720px){.grid{grid-template-columns:1fr}.wide{grid-column:auto}.meeting-picker select{min-width:0;width:100%}}
+.tpl-card{border-left:4px solid #2e789e}.tpl-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px;margin:12px 0}.tpl-item{display:flex;gap:8px;align-items:flex-start;background:#f5f8fa;border:1px solid #dde5eb;border-radius:8px;padding:9px}.tpl-item input{margin-top:3px}.tpl-item .tpl-name{font-size:13px;line-height:1.4}.tpl-item .tpl-cat{display:block;color:#687989;font-size:12px}.tpl-item.recommended{background:#eef6fb;border-color:#a9c9dd}.tpl-progress{margin:12px 0;background:#f5f8fa;border-radius:8px;padding:12px}.tpl-bar{height:8px;background:#dbe4ea;border-radius:999px;overflow:hidden;margin:8px 0}.tpl-bar>i{display:block;height:100%;background:#2e789e;width:0;transition:width .2s}.tpl-step{font-size:13px;color:#31566d;margin:3px 0}.tpl-result{margin-top:14px}.tpl-result table{font-size:13px}.tpl-error{color:#9a2d2d;font-size:13px}
+.hint-guide{background:#eef6fb;border-left:3px solid #2e789e;padding:9px 12px;border-radius:0 6px 6px 0;font-size:13px;line-height:1.6;margin:8px 0}
+.hint-guide code{background:#fff;border:1px solid #cfdde6;border-radius:4px;padding:1px 5px;font-size:12px;color:#1f5d7d}
+.hint-guide a{color:#1f5d7d;text-decoration:underline;cursor:pointer}
+.warn-note{display:block;margin-top:6px;color:#8a5a00;background:#fff8e6;border-left:3px solid #d9a300;padding:7px 10px;border-radius:0 6px 6px 0}
+.inline-hint{font-size:13px;margin-left:10px;color:#8a5a00}
+.model-toggle{margin-left:10px;font-size:13px;color:#514a87;white-space:normal}
+.model-toggle input{width:auto;padding:0;margin-right:4px}
+.tpl-missing{border:1px solid #e2b6b6;background:#fdf1f1;border-radius:8px;padding:11px 13px;margin:10px 0}
+.tpl-missing b{color:#9a2d2d}
+.tpl-missing ul{margin:7px 0 0 18px;padding:0}
+.tpl-missing li{margin:3px 0;font-size:13px}
+.tpl-missing a{color:#1f5d7d;text-decoration:underline;cursor:pointer}
+
+.dsh-toast{position:fixed;left:50%;top:14px;transform:translate(-50%,-140%);z-index:9999;max-width:min(680px,92vw);
+background:#243b4a;color:#fff;padding:11px 18px;border-radius:8px;font-size:14px;line-height:1.5;
+box-shadow:0 8px 24px rgba(0,0,0,.22);transition:transform .22s ease;pointer-events:none}
+.dsh-toast.show{transform:translate(-50%,0)}
+
+.step-nav{position:sticky;top:0;z-index:500;display:flex;gap:6px;flex-wrap:wrap;
+background:rgba(255,255,255,.96);backdrop-filter:blur(6px);border-bottom:1px solid #dce4eb;
+padding:8px 4px;margin:0 0 14px;border-radius:8px}
+.step-nav a{font-size:13px;color:#31566d;text-decoration:none;padding:5px 10px;border-radius:999px;
+border:1px solid #cfdde6;background:#f6f9fb;cursor:pointer;white-space:nowrap}
+.step-nav a:hover{background:#e7f1f7;border-color:#a9c9dd}
+.step-nav a.hot{background:#164e79;color:#fff;border-color:#164e79}
+.card-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.card-head h2{margin:0}
+.collapse-btn{background:#e8eef4;color:#31566d;font-size:12px;padding:4px 10px;border-radius:999px}
+.card.collapsed> :not(.card-head){display:none}
+.hide-guide{background:#fffbe8;border:1px solid #e8d79a;border-radius:8px;padding:11px 13px;margin:10px 0;font-size:13px;line-height:1.6}
+.hide-guide code{background:#fff;border:1px solid #ddd0a0;border-radius:4px;padding:1px 5px;font-size:12px}
+.btn-note{display:block;font-size:12px;color:#687989;margin-top:5px;line-height:1.5}
+
+.tpl-pick{margin:10px 0;border:1px solid #dbe4ea;border-radius:8px;background:#fafcfd;padding:2px 10px}
+.tpl-pick summary{cursor:pointer;padding:8px 0;font-size:13px;color:#31566d;font-weight:600}
+
+.req{color:#c0392b;font-weight:700}
+.opt{background:#eef3f7;color:#5b6b78;border-radius:999px;padding:1px 7px;font-size:11px;font-weight:400}
+.field-guide{background:#eef6fb;border-left:3px solid #2e789e;padding:9px 12px;border-radius:0 6px 6px 0;font-size:13px;line-height:1.6;margin:8px 0 12px}
+</style></head><body><main><nav class="step-nav" id="stepNav" aria-label="步骤导航">
+<a href="javascript:void(0)" onclick="jumpToCard('step1')">1 录入</a>
+<a href="javascript:void(0)" onclick="jumpToCard('step2')">2 生成</a>
+<a href="javascript:void(0)" onclick="jumpToCard('card3')">3 存档</a>
+<a href="javascript:void(0)" onclick="jumpToCard('card4')">4 信息</a>
+<a href="javascript:void(0)" onclick="jumpToCard('card5')">5 名单</a>
+<a href="javascript:void(0)" onclick="jumpToCard('card6')">6 变更</a>
+<a href="javascript:void(0)" onclick="jumpToCard('card7')">7 纪要</a>
+<a href="javascript:void(0)" onclick="jumpToCard('card9')">9 旧包</a>
+<a href="javascript:void(0)" onclick="jumpToCard('card10')">10 历史</a>
+</nav>
+<p><a href="workbench.html">返回综智助手首页</a>　<a href="information.html">政务信息助手</a>　<a href="official_documents.html">公文助手</a>　<a href="knowledge.html">综合知识库</a></p><h1>会务助手</h1><p>从会议信息和参会名单出发，生成同一版本的通知、议程、桌签、座位图和纪要。正式排序与座次规则待综合管理部门确认。</p>
+<div class="card intake-card" id="step1"><h2>1 录入会议信息</h2>
+<p>把微信、邮件或口头记录整理成一段文字粘贴到这里。系统在本机识别并填入下方表单，不会自动保存，也不会把参会人员发送给模型。</p>
+<p class="hint-guide">建议至少写清这四项：<b>会议名称</b>、<b>时间</b>、<b>地点</b>、<b>参会人员</b>。
+人员前面要写明是哪一方，例如 <code>对方：</code> <code>SEI：</code>，否则识别不出名单。
+<a href="javascript:void(0)" onclick="fillDemoText()">点这里填入一段可识别的示例</a></p>
+<textarea id="intakeText" placeholder="示例：&#10;11月20日下午2点30分，在北楼2208会议室召开项目推进会&#10;对方：&#10;张示例 副总经理、总工程师&#10;SEI：&#10;周示例 公司董事、党委书记"></textarea>
+<p><button onclick="parseIntake()">智能识别并填入</button><label class="model-toggle"><input type="checkbox" id="intakeUseModel">识别不出时用集团模型补全（会发送这段文字，可能产生费用）</label>
+<span id="intakeHint" class="inline-hint"></span></p>
+<div id="intakeResult"><h3>识别结果</h3><p class="intake-findings" id="intakeFindings"></p><div class="scroll"><table class="people-table" id="intakePeople"></table></div></div>
+</div>
+
+<div class="card tpl-card" id="step2"><h2>2 选择材料并生成</h2>
+<p class="hint-guide">基于 13 份真实模板<b>原样生成</b>：只替换文字，保留原始字体、字号、页边距、表格、图片、Logo 与页面比例。生成过程不调用任何模型，不联网。
+<span class="warn-note">生成后请立刻下载保存，<b>系统不留存这些文件</b>，刷新页面后需要重新生成。</span></p>
+<div class="grid">
+<label>会议类型<select id="tplMeetingType" onchange="loadTemplateRecommend()">
+<option value="domestic_receipt">国内接待会议</option>
+<option value="foreign_receipt">涉外接待会议</option>
+<option value="research_symposium">调研座谈会</option>
+<option value="project_meeting">项目会议</option>
+<option value="report_meeting">汇报会</option>
+</select></label>
+<label>欢迎屏文案 <span class="opt">可选</span><select id="tplWelcomeMode">
+<option value="single_line">单行（只写单位）</option>
+<option value="three_lines">三行（含领导姓名）</option>
+</select></label>
+<label>人员排序 <span class="opt">可选</span><select id="tplPersonOrder">
+<option value="manual">按录入顺序（默认）</option>
+<option value="group_by_org">按单位归组</option>
+<option value="title_level">按职务级别（高到低）</option>
+<option value="dept_rank">按部门职务标准（主任→书记→副职→高项→三协→四协）</option>
+</select></label>
+</div>
+<p><span id="tplReason" class="model-status">正在读取推荐…</span></p>
+<div id="tplMissing" class="tpl-missing" style="display:none"></div>
+<details id="tplPickBox" class="tpl-pick"><summary id="tplPickSummary">查看/修改要生成的材料（已按推荐勾选）</summary>
+<div id="tplList" class="tpl-list"></div></details>
+<p><button onclick="generateBundle()">开始生成</button>
+<button class="secondary" onclick="loadTemplateRecommend()" title="重新按会议类型勾选系统推荐的材料组合">重新勾选推荐组合</button>
+<span id="tplHint" class="inline-hint"></span></p>
+<div id="tplProgress" class="tpl-progress" style="display:none"></div>
+<div id="tplResult" class="tpl-result" style="display:none"></div>
+<p class="btn-note"><b>这一步不需要先建会议存档。</b>生成的材料直接下载到本机即可使用。
+只有当你需要<b>留下记录、事后查看历史版本、或做人员变更</b>时，才需要继续做第 3 步“创建或选择会议存档”。</p>
+</div>
+
+<div class="card" id="card3"><div class="card-head"><h2>3 创建或选择会议存档（可选）</h2><button class="collapse-btn" onclick="toggleCard('card3')" id="btn_card3">折叠</button></div><p>这一步是<b>可选</b>的：如果你只是想生成材料并下载（第 2 步），可以跳过。在这里建存档后，才能保存名单、做人员变更、查看历史版本，并用第 9 步下载系统统一打包的材料包。</p><div class="meeting-picker"><select id="meetingList" aria-label="已有会议"><option value="">正在读取已有会议……</option></select><button onclick="openSelectedMeeting()">打开选中会议</button></div><hr class="divider"><label>新会议名称 <span class="req">*</span><input id="meetingName" placeholder="必填，输入新会议名称"></label><button onclick="createMeeting()">创建会议</button><div id="summary"></div><div id="readiness"></div><details class="advanced-id"><summary>高级：使用会议编号打开</summary><p><input id="meetingId" size="38" placeholder="会议编号"><button class="secondary" onclick="openMeeting()">打开</button></p></details></div>
+<div class="card" id="card4"><div class="card-head"><h2>4 会议任务信息</h2>
+<p class="field-guide">这些多数标<span class="opt">可选</span>。真正必需的是<b>会议名称</b>和<b>参会人员姓名</b>——没有它们无法生成名单。
+其余（时间、地点、议程等）留空不会报错，但生成对应材料时会被提示补齐。</p><button class="collapse-btn" onclick="toggleCard('card4')" id="btn_card4">折叠</button></div><p>先预览再确认。信息不完整时可以留空，系统会标记缺项。</p><div class="grid">
+<label>主办部门 <span class="opt">可选</span><input id="organizer_department"></label><label>会议主题 <span class="opt">可选</span><input id="theme"></label>
+<label>开始时间 <span class="opt">可选</span><input id="start_at" type="datetime-local"></label><label>结束时间 <span class="opt">可选</span><input id="end_at" type="datetime-local"></label>
+<label>地点或线上平台 <span class="opt">可选</span><input id="location"></label>
+<label>客方单位英文名 <span class="opt">可选</span><input id="guest_org_en" placeholder="仅涉外议程需要，如 Saudi Aramco"></label><label>主方单位英文名 <span class="opt">可选</span><input id="host_org_en" placeholder="仅涉外议程需要，如 SINOPEC Engineering Incorporation (SEI)"></label><label>会议状态 <span class="opt">可选</span><select id="status"><option value="draft">草稿</option><option value="confirmed">已确认</option><option value="completed">已完成</option><option value="archived">已归档</option></select></label>
+<label>主持人 <span class="opt">可选</span><input id="host"></label>
+<label class="wide">议程 <span class="opt">可选</span><textarea id="agenda"></textarea></label>
+<label class="wide">会前材料 <span class="opt">可选</span><textarea id="materials"></textarea></label><label class="wide">备注 <span class="opt">可选</span><textarea id="notes"></textarea></label>
+</div><button onclick="previewDetails()">预览会议信息变更</button></div>
+<div class="card ai-card" id="card4a"><div class="card-head"><h2>4.1 可选：用 AI 生成会议通知初稿</h2><button class="collapse-btn" onclick="toggleCard('card4a')" id="btn_card4a">折叠</button></div><p><span class="model-status" id="aiStatus">正在检查集团模型配置……</span> <button class="secondary" id="aiTestButton" onclick="testAiConnection()" disabled>测试当前连接</button></p><p><small>连接测试只发送固定的公开虚构短句，不发送会议或人员信息。业务调用仅发送会议名称、主题、时间、地点、主办部门和议程；不发送参会名单、人员职务或附件。缺失信息由模型标记为【待确认】，不得编造。</small></p><label class="consent"><input id="aiConsent" type="checkbox"><span>我已检查上述会议信息，确认可发送至集团大模型用于生成初稿。</span></label><button id="aiGenerateButton" onclick="generateAiNotice()" disabled>生成 AI 会议通知初稿</button><div class="ai-output" id="aiOutput"><p><small id="aiMeta"></small></p><textarea id="aiDraft" aria-label="AI 会议通知初稿" readonly></textarea><p><small>此内容只是预览。点击确认采用后，系统才会形成会议新版本、生成Word并保留历史材料。</small></p><button id="aiAdoptButton" onclick="adoptAiNotice()" style="display:none">确认采用并生成新版本</button></div></div>
+<div class="card" id="card5"><div class="card-head"><h2>5 导入名单</h2><button class="collapse-btn" onclick="toggleCard('card5')" id="btn_card5">折叠</button></div><p>Excel或Word表格第一行至少包含：姓名、单位、职务、人员类别；可选：部门、排序信息。只接受 .xlsx 或 .docx，最多 1000 人。</p><input id="file" type="file" accept=".xlsx,.docx"><button onclick="parseFile()">检查名单</button><div id="findings"></div></div>
+<div class="card" id="card6"><div class="card-head"><h2>6 人员变更</h2><button class="collapse-btn" onclick="toggleCard('card6')" id="btn_card6">折叠</button></div><p>修改或新增人员后，系统会先展示受影响的名单、桌签和座位图，确认后再生成新版本。</p><div class="person-editor" id="personEditor"><h3 id="personEditorTitle">新增人员</h3><input id="person_id" type="hidden"><div class="grid"><label>姓名 <span class="req">*</span><input id="person_name"></label><label>单位 <span class="opt">可选</span><input id="person_organization"></label><label>部门 <span class="opt">可选</span><input id="person_department"></label><label>职务 <span class="opt">可选</span><input id="person_title"></label><label>人员类别 <span class="opt">可选</span><select id="person_category"><option value="">请选择</option><option>主宾</option><option>来宾</option><option>主方</option><option>工作人员</option></select></label><label>手工排序 <span class="opt">可选</span><input id="person_sort_order" type="number" min="1"></label></div><button onclick="previewPersonChange()">预览人员变更</button><button class="secondary" onclick="closePersonEditor()">取消</button></div><div class="scroll"><table><thead><tr><th>排序</th><th>姓名</th><th>单位</th><th>部门</th><th>职务</th><th>类别</th><th>操作</th></tr></thead><tbody id="rows"></tbody></table></div><p><button class="secondary" onclick="addPerson()">新增人员</button></p></div>
+<div class="card" id="card7"><div class="card-head"><h2>7 会后纪要与督办</h2><button class="collapse-btn" onclick="toggleCard('card7')" id="btn_card7">折叠</button></div><p>粘贴会议记录，填写纪要摘要和明确提到的督办事项。未明确的责任人、部门和期限请留空。</p>
+<label class="wide">会议记录 <span class="opt">可选</span><textarea id="minutes_source"></textarea></label><label class="wide">纪要摘要 <span class="opt">可选</span><textarea id="minutes_summary"></textarea></label>
+<div class="scroll"><table><thead><tr><th>事项</th><th>责任部门</th><th>责任人</th><th>期限</th><th>原文依据</th><th>操作</th></tr></thead><tbody id="actionRows"></tbody></table></div>
+<button class="secondary" onclick="addActionItem()">新增督办事项</button><button onclick="previewMinutes()">预览纪要和督办</button></div>
+<div class="card" id="preview"><div class="card-head"><h2>8 审核变更</h2><button class="collapse-btn" onclick="toggleCard('preview')" id="btn_preview">折叠</button></div><div id="previewText"></div><button onclick="confirmChange()">确认本次变更</button><button class="secondary" onclick="cancelPreview()">取消</button></div>
+<div class="card" id="card9"><div class="card-head"><h2>9 下载旧版材料包</h2><button class="collapse-btn" onclick="toggleCard('card9')" id="btn_card9">折叠</button></div><button onclick="downloadCurrent()">下载当前版本材料包</button><p><small>材料包包含会前材料；提交纪要后还会包含会议纪要初稿和督办事项清单。初稿均需人工审核。</small></p></div>
+<div class="card" id="card10"><div class="card-head"><h2>10 历史版本</h2><button class="collapse-btn" onclick="toggleCard('card10')" id="btn_card10">折叠</button></div><p><small>每次确认都会保存独立材料包，不覆盖旧版本。</small></p><div id="history">创建或打开会议后显示历史记录。</div></div><p id="message"></p>
+</main><script>
+let mid=localStorage.getItem('p0_meeting_id')||'', pending=null;
+const $=id=>document.getElementById(id); $('meetingId').value=mid;
+function msg(s){$('message').textContent=s;showToast(s)}
+function showToast(text){
+  if(!text)return;
+  let t=document.getElementById('dshToast');
+  if(!t){t=document.createElement('div');t.id='dshToast';document.body.appendChild(t)}
+  t.textContent=text;t.className='dsh-toast show';
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer=setTimeout(()=>{t.className='dsh-toast'},3200);
+}
+async function api(path,body){let res;try{res=await fetch(path,{method:body?'POST':'GET',headers:body?{'Content-Type':'application/json'}:{},body:body?JSON.stringify(body):undefined})}catch(e){throw Error('本机服务未连接，请重新启动综智助手后刷新页面')}let raw=await res.text(),data={};if(raw){try{data=JSON.parse(raw)}catch(e){throw Error('后台返回内容不完整，请刷新后重试')}}if(!res.ok)throw Error(data.error||'操作失败');return data}
+function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+async function createMeeting(){if(window.creatingMeeting)return;window.creatingMeeting=true;let btn=event&&event.target&&event.target.tagName==='BUTTON'?event.target:null;if(btn)btn.disabled=true;try{let name=$('meetingName').value.trim();if(!name){msg('请输入新会议名称');return}let d=await api('/api/meeting',{name});mid=d.id;localStorage.setItem('p0_meeting_id',mid);$('meetingId').value=mid;await refresh();await loadMeetings();if(window.intakeDraft)applyIntakeFields(window.intakeDraft.meeting);msg(window.intakeDraft?'会议已创建。请点击“预览会议信息变更”并确认，再预览识别人员名单':'会议已创建')}catch(e){msg(e.message)}finally{window.creatingMeeting=false;if(btn)btn.disabled=false}}
+async function openMeeting(){mid=$('meetingId').value.trim();localStorage.setItem('p0_meeting_id',mid);try{await refresh();msg('会议已打开')}catch(e){msg(e.message)}}
+async function loadMeetings(){try{let rows=await api('/api/meetings');$('meetingList').innerHTML=rows.length?rows.map(x=>`<option value="${escapeHtml(x.id)}" ${x.id===mid?'selected':''}>${escapeHtml(x.name)} · v${x.revision}${x.start_at?' · '+escapeHtml(x.start_at.replace('T',' ')):''}${x.location?' · '+escapeHtml(x.location):''}</option>`).join(''):'<option value="">暂无已有会议</option>'}catch(e){msg(e.message)}}
+async function openSelectedMeeting(){let selected=$('meetingList').value;if(!selected)return msg('请先选择一个会议');mid=selected;$('meetingId').value=mid;localStorage.setItem('p0_meeting_id',mid);try{await refresh();msg('会议已打开')}catch(e){msg(e.message)}}
+async function loadAiStatus(){try{let d=await api('/api/ai/status');$('aiStatus').textContent=d.configured?`已配置，尚未测试当前连接 · ${d.model}`:`未配置 SEI_API_KEY · 预设模型 ${d.model}`;$('aiGenerateButton').disabled=!d.configured;$('aiTestButton').disabled=!d.configured}catch(e){$('aiStatus').textContent=e.message;$('aiGenerateButton').disabled=true;$('aiTestButton').disabled=true}}
+async function testAiConnection(){$('aiTestButton').disabled=true;$('aiStatus').textContent='正在测试当前连接……';try{let d=await api('/api/ai/test-connection',{});$('aiStatus').textContent=`连接成功 · ${d.model}`;msg(d.message)}catch(e){$('aiStatus').textContent=`当前连接不可用 · ${e.message}`;msg(e.message)}finally{$('aiTestButton').disabled=false}}
+async function generateAiNotice(){if(!mid||!window.currentMeeting)return msg('请先创建或打开会议');if(!$('aiConsent').checked)return msg('请先确认会议信息可发送至集团大模型');let fields={meeting_name:window.currentMeeting.name,organizer_department:$('organizer_department').value,theme:$('theme').value,start_at:$('start_at').value,end_at:$('end_at').value,location:$('location').value,agenda:$('agenda').value};$('aiGenerateButton').disabled=true;$('aiAdoptButton').style.display='none';msg('正在调用集团模型生成初稿……');try{let d=await api('/api/ai/meeting-notice',{confirmed_for_model:true,meeting_id:mid,fields});window.aiNoticePreview=d.preview;$('aiDraft').value=d.draft;$('aiMeta').textContent=`模型：${d.model} · 已发送字段：${d.sent_fields.join('、')} · Token：${d.usage.total_tokens??'未返回'}`;$('aiOutput').style.display='block';$('aiAdoptButton').style.display=d.preview?'inline-block':'none';$('aiOutput').scrollIntoView({behavior:'smooth'});msg(d.message)}catch(e){msg(e.message)}finally{await loadAiStatus()}}
+async function adoptAiNotice(){let p=window.aiNoticePreview;if(!p)return msg('请先生成新的AI会议通知初稿');if(!confirm('确认采用当前AI初稿并生成会议新版本和Word材料？'))return;$('aiAdoptButton').disabled=true;try{let d=await api('/api/meeting/'+mid+'/ai-notice-commit',{confirmed:true,preview_id:p.id});downloadBase64(d.bundle_base64,`meeting-${mid.slice(0,8)}-v${d.meeting.revision}.zip`);window.aiNoticePreview=null;$('aiAdoptButton').style.display='none';$('aiMeta').textContent+=` · 已采用为会议版本 ${d.meeting.revision}`;await refresh();msg(d.message)}catch(e){msg(e.message)}finally{$('aiAdoptButton').disabled=false}}
+const detailFields=['organizer_department','theme','start_at','end_at','location','host','agenda','materials','notes','status'];
+const detailLabels={organizer_department:'主办部门',theme:'会议主题',start_at:'开始时间',end_at:'结束时间',location:'地点',host:'主持人',agenda:'议程',materials:'会前材料',notes:'备注',status:'状态'};
+function applyIntakeFields(meeting){detailFields.forEach(k=>{if(meeting[k]!==undefined&&meeting[k]!==null)$(k).value=meeting[k]})}
+function renderIntakePeople(people){$('intakePeople').innerHTML=people.map((p,i)=>`<tr data-person-id="${escapeHtml(p.id||crypto.randomUUID().replaceAll('-',''))}"><td><input class="name" aria-label="人员${i+1}完整姓名" value="${escapeHtml(p.name)}" oninput="updateIntakeReadiness()"></td><td><input class="organization" aria-label="人员${i+1}单位" value="${escapeHtml(p.organization)}" oninput="updateIntakeReadiness()"></td><td><input class="department" aria-label="人员${i+1}部门（可选）" value="${escapeHtml(p.department)}" oninput="updateIntakeReadiness()"></td><td><input class="title" aria-label="人员${i+1}职务" value="${escapeHtml(p.title)}" oninput="updateIntakeReadiness()"></td><td><input class="name_en" aria-label="人员${i+1}英文姓名（涉外议程需要）" placeholder="仅涉外议程需要" value="${escapeHtml(p.name_en||'')}" oninput="updateIntakeReadiness()"></td><td><select class="category" aria-label="人员${i+1}类别" onchange="updateIntakeReadiness()"><option ${p.category==='主宾'?'selected':''}>主宾</option><option ${p.category==='来宾'?'selected':''}>来宾</option><option ${p.category==='主方'?'selected':''}>主方</option><option ${p.category==='工作人员'?'selected':''}>工作人员</option></select></td></tr>`).join('')}
+function isIntakeAbbreviation(name){return /^[\u4e00-\u9fff]{1,2}总$/.test(name)}
+function intakePersonIssues(person,index){let issues=[];if(!person.name)issues.push(`人员 ${index+1} 缺少完整姓名`);else if(isIntakeAbbreviation(person.name))issues.push(`人员 ${index+1}“${person.name}”仍是简称，请填写完整姓名`);if(!person.organization)issues.push(`人员 ${index+1} 缺少单位`);if(!person.title)issues.push(`人员 ${index+1} 缺少职务`);if(!person.category)issues.push(`人员 ${index+1} 缺少类别`);return issues}
+function intakeRecognitionHtml(){let r=window.intakeRecognition||{},c=r.confidence||{},level={high:'高置信度',medium:'建议确认',low:'待补充'},reqNames={meeting_notice:'会议通知',agenda:'会议议程',roster:'人员名单',handbook:'会议手册',desk_cards:'桌签',seat_map:'座位图',meal:'用餐安排',meal_seat_map:'用餐座次图',meal_cards:'用餐桌签',checklist:'会务检查清单'},req=Object.entries(r.requirements||{}).filter(x=>x[1]).map(x=>reqNames[x[0]]),parts=[];if(r.meeting_type)parts.push(`<span class="pill">类型：${escapeHtml(r.meeting_type)}（建议确认）</span>`);if(r.guest_count!=null)parts.push(`<span class="pill">对方 ${r.guest_count} 人</span>`);if(r.host_count!=null)parts.push(`<span class="pill">我方 ${r.host_count} 人</span>`);if(r.total_count!=null)parts.push(`<span class="pill">合计 ${r.total_count} 人</span>`);req.forEach(x=>parts.push(`<span class="pill">需生成：${escapeHtml(x)}</span>`));Object.entries(c).forEach(([k,v])=>parts.push(`<span class="pill ${v==='low'?'warn':''}">${escapeHtml({meeting_name:'会议名称',start_at:'开始时间',location:'地点',meeting_type:'会议类型',attendees:'人员',requirements:'材料需求'}[k]||k)}：${escapeHtml(level[v]||v)}</span>`));let qs=(r.questions||[]);
+let questions=qs.length?`<strong>需要你补充：</strong>${escapeHtml(qs.join('、'))}`:'';return`<div class="readiness">${parts.join('')}${questions?'<hr>'+questions:''}</div>`}
+function intakeCandidateHtml(){return(window.intakeCandidates||[]).map(s=>`<div class="readiness"><strong>${escapeHtml(s.input)}可选本地已确认人员：</strong>${s.candidates.map((x,j)=>`<button class="secondary" onclick="chooseKnownPerson(${s.attendee_index},${j})">${escapeHtml(x.name)} · ${escapeHtml(x.organization)} · ${escapeHtml(x.title)}</button>`).join('')}</div>`).join('')}
+function chooseKnownPerson(personIndex,candidateIndex){let suggestion=window.intakeCandidates.find(x=>x.attendee_index===personIndex),candidate=suggestion?.candidates[candidateIndex],row=$('intakePeople').querySelectorAll('tr')[personIndex];if(!candidate||!row)return;row.querySelector('.name').value=candidate.name;row.querySelector('.organization').value=candidate.organization;row.querySelector('.department').value=candidate.department;row.querySelector('.title').value=candidate.title;updateIntakeReadiness();msg('已填入本地已确认人员信息，仍需在预览中人工确认')}
+function updateIntakeReadiness(){let people=collectIntakePeople(),issues=people.flatMap(intakePersonIssues),findings=[...(window.intakeBaseFindings||[]),...issues],details=findings.length?findings.map(escapeHtml).join('<br>'):'人员信息已补全，可点击“预览识别人员名单”';$('intakeFindings').innerHTML=intakeRecognitionHtml()+`<p>${details}</p>`+intakeCandidateHtml();return issues}
+
+const TEMPLATE_FRIENDLY={
+  attendee_list_domestic_a:'参会名单（标准版：含议程+名单）',
+  attendee_list_domestic_b:'参会名单（名单在前版）',
+  attendee_list_domestic_c:'参会名单（精简版：仅名单+落款）',
+  attendee_list_domestic_d:'参会名单（书名号标题版）',
+  attendee_list_symposium:'调研座谈会议程（按单位分组）',
+  agenda_foreign_silleno:'涉外议程（中英文对照）',
+  agenda_foreign_aramco:'涉外议程（大表版·中英文）',
+  handbook_symposium:'会议手册（公文格式）',
+  desk_card_lt_zh:'桌签（中文）',
+  desk_card_l_en:'桌签（英文）',
+  meal_tag_landscape:'饭签（每页19人）',
+  welcome_screen_extend:'会议欢迎屏（单行）',
+  welcome_screen_yangzi:'会议欢迎屏（三行）'
+};
+const FIELD_LABEL={meeting_name:'会议名称',start_at:'开始时间',end_at:'结束时间',location:'会议地点',
+  agenda_items:'会议议程',attendees:'参会人员',guest_org:'来访单位',theme:'会议主题',organizations:'单位顺序'};
+const FIELD_ANCHOR={meeting_name:'meetingName',start_at:'start_at',location:'location',
+  agenda_items:'agenda',guest_org:'location',theme:'theme'};
+
+
+function jumpToCard(id){
+  let el=document.getElementById(id);
+  if(!el)return;
+  // 折叠状态下先展开，否则跳过去什么也看不到
+  if(el.classList.contains('collapsed'))toggleCard(id);
+  el.scrollIntoView({behavior:'smooth',block:'start'});
+  markNav(id);
+}
+function toggleCard(id){
+  let el=document.getElementById(id);
+  if(!el)return;
+  let collapsed=el.classList.toggle('collapsed');
+  let btn=document.getElementById('btn_'+id);
+  if(btn)btn.textContent=collapsed?'展开':'折叠';
+  if(!collapsed)el.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function markNav(id){
+  document.querySelectorAll('.step-nav a').forEach(a=>a.classList.remove('hot'));
+  let map={step1:0,step2:1,card3:2,card4:3,card4a:3,card5:4,card6:5,card7:6,preview:7,card9:8,card10:9};
+  let links=document.querySelectorAll('.step-nav a');
+  if(map[id]!==undefined&&links[map[id]])links[map[id]].classList.add('hot');
+}
+// 默认折叠低频步骤，减少首屏长度。
+// 注意：脚本在 </body> 前执行，此时 DOMContentLoaded 可能已经过去，
+// 监听器不会再触发，必须直接调用。
+function collapseByDefault(){
+  ['card4a','card5','card6','card7','preview','card9','card10'].forEach(id=>{
+    let el=document.getElementById(id);
+    if(el&&!el.classList.contains('collapsed')){
+      el.classList.add('collapsed');
+      let b=document.getElementById('btn_'+id); if(b)b.textContent='展开';
+    }
+  });
+}
+
+function fillDemoText(){
+  $('intakeText').value='11月20日下午2点30分，在北楼2208会议室召开示例石化二期乙烯装置基础设计推进会\n'
+    +'会议名称：示例石化二期乙烯装置基础设计推进会\n'
+    +'会议议程：1.双方介绍参会人员 2.示例石化介绍二期进展 3.SEI汇报基础设计情况 4.交流研讨\n'
+    +'对方：\n示例石化公司\n陈立群 副总经理、总工程师\n周敏 工程管理部经理\n'
+    +'SEI：\n工程建设公司\n冯示例 副总经理\n林建华 乙烯装置设计经理';
+  $('intakeText').focus();
+  showToast('已填入示例，可点“智能识别并填入”试试');
+}
+
+async function loadTemplateRecommend(){
+  let type=$('tplMeetingType').value;
+  try{
+    let d=await api('/api/meeting-templates/recommend',{meeting_type:type});
+    window.tplRecommended=d.recommended||[];
+    $('tplReason').textContent='推荐依据：'+(d.reason||'')+'（可自行增减）';
+    renderTemplateList(d.all_templates||[],window.tplRecommended);
+    updatePickSummary();
+  }catch(e){$('tplReason').textContent='读取推荐失败：'+e.message}
+}
+function renderTemplateList(all,recommended){
+  if(!all.length){$('tplList').innerHTML='<p>未找到模板</p>';return}
+  $('tplList').innerHTML=all.map(t=>{
+    let on=recommended.includes(t.id);
+    let friendly=TEMPLATE_FRIENDLY[t.id]||t.name;
+    return `<label class="tpl-item ${on?'recommended':''}">
+      <input type="checkbox" class="tplChk" value="${escapeHtml(t.id)}" ${on?'checked':''}>
+      <span><span class="tpl-name">${escapeHtml(friendly)}</span>
+      <span class="tpl-cat">${escapeHtml(t.category_label)} · ${escapeHtml(t.file_type.toUpperCase())}${on?' · 推荐':''}</span></span>
+    </label>`;
+  }).join('');
+}
+function selectedTemplates(){return [...document.querySelectorAll('.tplChk:checked')].map(x=>x.value)}
+function updatePickSummary(){
+  let el=document.getElementById('tplPickSummary');
+  if(!el)return;
+  let n=selectedTemplates().length;
+  el.textContent=(document.getElementById('tplPickBox').open?'收起':'查看/修改')+`要生成的材料（已选 ${n} 项）`;
+}
+document.addEventListener('click',e=>{
+  if(e.target&&e.target.classList&&e.target.classList.contains('tplChk'))setTimeout(updatePickSummary,0);
+});
+document.addEventListener('toggle',e=>{
+  if(e.target&&e.target.id==='tplPickBox')updatePickSummary();
+},true);
+// 人员类别 → 主客方。主宾/来宾 属外方，主方/工作人员 属我方。
+const SIDE_OF_CATEGORY={'主宾':'guest','来宾':'guest','主方':'host','工作人员':'host'};
+function collectMeetingForTemplates(){
+  let meeting={
+    meeting_name:$('meetingName')?$('meetingName').value.trim():'',
+    meeting_type:$('tplMeetingType').value,
+    start_at:$('start_at')?$('start_at').value:'',
+    location:$('location')?$('location').value.trim():'',
+    theme:$('theme')?$('theme').value.trim():'',
+    welcome_mode:$('tplWelcomeMode').value,
+    person_order:$('tplPersonOrder')?$('tplPersonOrder').value:'manual',
+    // ACC-014：涉外议程需要主/客方单位英文名
+    guest_org_en:$('guest_org_en')?$('guest_org_en').value.trim():'',
+    host_org_en:$('host_org_en')?$('host_org_en').value.trim():'',
+    agenda_items:[],
+    attendees:[]
+  };
+  if($('agenda'))meeting.agenda_items=$('agenda').value.split('\n')
+    .map(x=>x.replace(/^\s*\d+[.．、]\s*/,'').trim()).filter(Boolean);
+  let rows=[...document.querySelectorAll('#intakePeople tr')];
+  if(rows.length){
+    // ACC-010：原来这里把 side 一律写成空串，丢掉了表格里的"人员类别"下拉框，
+    // 导致后端无法区分主客——外方被当成主方、涉外模板外方表格空白、
+    // 并且误报"缺少来访单位"。改为把 category 映射成 side。
+    meeting.attendees=rows.map(tr=>{
+      let cat=tr.querySelector('.category')?tr.querySelector('.category').value:'';
+      return {
+        name:tr.querySelector('.name')?tr.querySelector('.name').value.trim():'',
+        organization:tr.querySelector('.organization')?tr.querySelector('.organization').value.trim():'',
+        department:tr.querySelector('.department')?tr.querySelector('.department').value.trim():'',
+        title:tr.querySelector('.title')?tr.querySelector('.title').value.trim():'',
+        // ACC-014：涉外议程要求英文姓名；英文职务/单位名由后端按翻译表自动补全
+        name_en:tr.querySelector('.name_en')?tr.querySelector('.name_en').value.trim():'',
+        title_en:tr.querySelector('.title_en')?tr.querySelector('.title_en').value.trim():'',
+        organization_en:tr.querySelector('.organization_en')?tr.querySelector('.organization_en').value.trim():'',
+        category:cat,
+        side:SIDE_OF_CATEGORY[cat]||''
+      };
+    }).filter(p=>p.name);
+  }else if(window.people&&window.people.length){
+    meeting.attendees=window.people.map(p=>({
+      name:p.name,organization:p.organization,department:p.department||'',title:p.title,
+      category:p.category||'',side:SIDE_OF_CATEGORY[p.category]||''
+    }));
+  }
+  // 来访单位取**第一位客方**人员的单位；旧的"取第一个人"会把主方人员单位当成来访单位。
+  let guestList=meeting.attendees.filter(p=>p.side==='guest'&&p.organization);
+  let firstOrg=(guestList[0]&&guestList[0].organization)||'';
+  if(firstOrg)meeting.guest_org=firstOrg;
+  // ACC-014：主方单位同样取**第一位主方**人员的单位，供涉外议程匹配英文单位名。
+  let hostList=meeting.attendees.filter(p=>p.side==='host'&&p.organization);
+  if(hostList[0]&&hostList[0].organization)meeting.host_org=hostList[0].organization;
+  return meeting;
+}
+
+// 生成前的本地检查：直接在页面上标出缺什么、点一下就跳过去
+function localCheck(meeting,ids){
+  let probs=[];
+  if(!meeting.meeting_name)probs.push({f:'meeting_name',msg:'还没填会议名称'});
+  if(!meeting.start_at)probs.push({f:'start_at',msg:'还没填开始时间'});
+  if(!meeting.location)probs.push({f:'location',msg:'还没填会议地点'});
+  if(!meeting.attendees.length)probs.push({f:'attendees',msg:'还没有参会人员，请先用上方“智能识别并填入”'});
+  let needAgenda=ids.some(x=>/domestic_a|symposium|handbook/.test(x));
+  if(needAgenda&&!meeting.agenda_items.length)probs.push({f:'agenda_items',msg:'还没填会议议程（一行一条）'});
+  // 单位检查
+  let noOrg=meeting.attendees.filter(p=>!p.organization).length;
+  if(meeting.attendees.length&&noOrg){
+    probs.push({f:'attendees',msg:`有 ${noOrg} 位参会人员没填“所属单位”。不填的话名单分组会错，请在“识别结果”表里补上`});
+  }
+  return probs;
+}
+async function generateBundle(){
+  let ids=selectedTemplates();
+  $('tplHint').textContent='';
+  if(!ids.length){showToast('请至少勾选一种材料');return}
+  let meeting=collectMeetingForTemplates();
+  let problems=localCheck(meeting,ids);
+  let box=$('tplMissing');
+  if(problems.length){
+    box.style.display='block';
+    box.innerHTML='<b>还不能生成，请先补齐：</b><ul>'+problems.map(p=>{
+      let anc=FIELD_ANCHOR[p.f];
+      let act=anc?` <a href="javascript:void(0)" onclick="jumpTo('${anc}')">去填写</a>`:'';
+      return `<li>${escapeHtml(p.msg)}${act}</li>`;
+    }).join('')+'</ul>';
+    box.scrollIntoView({behavior:'smooth',block:'center'});
+    showToast('还差 '+problems.length+' 项信息，请看页面上的红色提示');
+    return;
+  }
+  box.style.display='none';
+  $('tplProgress').style.display='block';
+  $('tplResult').style.display='none';
+  $('tplProgress').innerHTML=`<div class="tpl-step" id="tplStepText">正在生成 ${ids.length} 类材料……</div>
+    <div class="tpl-bar"><i id="tplBar"></i></div>`;
+  try{
+    let d=await api('/api/meeting-bundle/generate',{template_ids:ids,meeting});
+    if(!d.ok){
+      $('tplProgress').style.display='none';
+      box.style.display='block';
+      box.innerHTML='<b>还不能生成，请先补齐：</b><ul>'+d.problems.map(p=>`<li>${escapeHtml(p)}</li>`).join('')+'</ul>';
+      showToast('请先补齐缺失信息');
+      return;
+    }
+    $('tplBar').style.width='100%';
+    $('tplStepText').textContent='生成完成';
+    let errs=(d.errors||[]);
+    $('tplResult').style.display='block';
+    $('tplResult').innerHTML=`<h3>生成完成（${d.files.length} 个文件，耗时 ${d.elapsed_ms} 毫秒）</h3>
+      <p class="warn-note"><b>请现在下载并保存到本机。</b>系统不留存这些文件，刷新或关闭页面后需要重新生成。</p>
+      ${d.zip?`<p><a href="${d.zip}" class="btn-link"><strong>⬇ 下载全部材料（ZIP）</strong></a></p>`:''}
+      <table><thead><tr><th>材料</th><th>文件名</th><th>大小</th><th>下载</th></tr></thead><tbody>
+      ${d.files.map(f=>`<tr><td>${escapeHtml(TEMPLATE_FRIENDLY[f.template_id]||f.label)}</td><td>${escapeHtml(f.name)}</td><td>${(f.size/1024).toFixed(0)} KB</td><td><a href="${f.download}">下载</a></td></tr>`).join('')}
+      </tbody></table>
+      ${errs.length?`<div class="tpl-error"><strong>以下材料没能生成：</strong><ul>${errs.map(e=>`<li>${escapeHtml(e.label)}：${escapeHtml(e.error)}</li>`).join('')}</ul></div>`:''}
+      <p><small>材料下载后即可在 Word / PowerPoint 打开核对。桌签与饭签请在打印前打开确认字号。</small></p>`;
+    $('tplResult').scrollIntoView({behavior:'smooth',block:'start'});
+    showToast('生成完成，共 '+d.files.length+' 个文件，请及时下载');
+  }catch(e){
+    $('tplProgress').style.display='none';
+    box.style.display='block';
+    box.innerHTML=`<b>生成失败：</b>${escapeHtml(e.message)}`;
+    showToast('生成失败：'+e.message);
+  }
+}
+function jumpTo(id){
+  let el=document.getElementById(id);
+  if(!el)return;
+  el.scrollIntoView({behavior:'smooth',block:'center'});
+  setTimeout(()=>{try{el.focus({preventScroll:true})}catch(_){}},400);
+}
+// 识别后检查单位缺失，直接提示
+function checkOrgAfterIntake(){
+  let rows=[...document.querySelectorAll('#intakePeople tr')];
+  if(!rows.length){showToast('没有识别到参会人员。人员前要写“对方：”或“SEI：”这样的标签');return}
+  let missing=rows.filter(tr=>{let o=tr.querySelector('.organization');return o&&!o.value.trim()}).length;
+  if(missing){
+    $('intakeHint').textContent=`注意：有 ${missing} 位人员没填“所属单位”，请在下方表格补上，否则名单分组会错`;
+    showToast(`已识别 ${rows.length} 人，其中 ${missing} 人缺单位`);
+  }else{
+    $('intakeHint').textContent='';
+    showToast(`已识别 ${rows.length} 人，信息完整，可以往下选材料了`);
+  }
+}
+
+async function parseIntake(){let text=$('intakeText').value.trim();if(!text)return msg('请先粘贴会议信息');let button=document.querySelector('.intake-card button');button.disabled=true;msg('正在本机识别会议名称、时间、地点、人员和材料需求……');try{let useModel=!!($('intakeUseModel')&&$('intakeUseModel').checked);let d=await api('/api/meeting-intake/parse',{text,use_model_fallback:useModel});window.intakeDraft=d;window.intakeRecognition=d.recognition||{};window.intakeCandidates=d.person_candidates||[];window.intakeBaseFindings=d.findings.filter(x=>!/^人员\s*\d+/.test(x));$('meetingName').value=d.meeting_name;applyIntakeFields(d.meeting);renderIntakePeople(d.attendees);updateIntakeReadiness();$('intakeResult').style.display='block';$('intakeResult').scrollIntoView({behavior:'smooth',block:'nearest'});let fb=d.fallback||{};let tail=fb.used?`（其中${fb.filled_fields.length}项由集团模型补全，请重点核对）`:'';let hint=(!useModel&&fb.reason&&/反应|未能|规则/.test(fb.reason))?'如仍识别不出来，可勾选“识别不出时用集团模型补全”再试一次。':'';msg((mid?'识别完成并填入当前页面，确认前不会保存':'识别完成。请核对建议确认项，再创建会议')+tail+(hint?'\n'+hint:''))}catch(e){msg(e.message)}finally{button.disabled=false;setTimeout(checkOrgAfterIntake,120)}}
+function collectIntakePeople(){return [...$('intakePeople').querySelectorAll('tr')].map(tr=>({id:tr.dataset.personId,name:tr.querySelector('.name').value.trim(),organization:tr.querySelector('.organization').value.trim(),department:tr.querySelector('.department').value.trim(),title:tr.querySelector('.title').value.trim(),category:tr.querySelector('.category').value,sort_order:null}))}
+async function previewIntakePeople(){if(!mid)return msg('请先点击“创建会议”');let people=collectIntakePeople();if(!people.length)return msg('没有识别到参会人员');let issues=updateIntakeReadiness();if(issues.length)return msg(issues[0]);await makePreview('import',{people})}
+async function refresh(){if(!mid)return;let d=await api('/api/meeting/'+mid),m=d.meeting;window.currentMeeting=m;if(window.aiNoticePreview&&window.aiNoticePreview.base_revision!==m.revision){window.aiNoticePreview=null;$('aiAdoptButton').style.display='none'}$('summary').innerHTML=`<p><strong>${escapeHtml(m.name)}</strong> · 版本 ${m.revision} · ${d.people.length} 人 · ${escapeHtml({draft:'草稿',confirmed:'已确认',completed:'已完成',archived:'已归档'}[m.status]||m.status)}</p>`;detailFields.forEach(k=>$(k).value=m[k]||(k==='status'?'draft':''));let required=[['theme','会议主题'],['start_at','开始时间'],['location','地点'],['agenda','议程']],missing=required.filter(([key])=>!m[key]).map(x=>x[1]);let next=missing.length?`建议下一步：补充${missing[0]}并预览会议信息变更。`:d.people.length?'会议基础信息和名单已就绪，可下载当前版本材料包。':'建议下一步：导入或新增参会人员。';$('readiness').innerHTML=`<div class="readiness"><strong>${escapeHtml(next)}</strong>${missing.map(x=>`<span class="pill warn">待补：${escapeHtml(x)}</span>`).join('')}${!m.end_at?'<span class="pill">结束时间待确认</span>':''}<span class="pill">已登记 ${d.people.length} 人</span></div>`;$('rows').innerHTML=d.people.map((p,i)=>`<tr><td>${i+1}</td><td>${escapeHtml(p.name)}</td><td>${escapeHtml(p.organization)}</td><td>${escapeHtml(p.department)}</td><td>${escapeHtml(p.title)}</td><td>${escapeHtml(p.category)}</td><td><button class="secondary" onclick="editPerson('${p.id}')">修改</button><button class="secondary" onclick="deletePerson('${p.id}')">删除</button></td></tr>`).join('');window.people=d.people;await refreshHistory()}
+async function refreshHistory(){if(!mid)return;let d=await api('/api/meeting/'+mid+'/history');let actionLabels={meeting_update:'会议信息变更',minutes_draft:'纪要与督办初稿',ai_notice_confirmed:'人工确认采用AI会议通知',import:'名单导入',add:'新增人员',update:'修改人员',delete:'删除人员',baseline_import:'历史基线',manual_export:'手工导出'};let materials=d.materials.map(x=>`<tr><td>v${x.revision}</td><td>${escapeHtml(actionLabels[x.reason]||x.reason)}</td><td>${escapeHtml(new Date(x.created_at).toLocaleString())}</td><td><a href="/api/material/${encodeURIComponent(x.id)}">下载该批材料</a></td></tr>`).join('');let events=d.events.map(x=>`<tr><td>v${x.revision}</td><td>${escapeHtml(actionLabels[x.action]||x.action)}</td><td>${escapeHtml(new Date(x.created_at).toLocaleString())}</td></tr>`).join('');$('history').innerHTML=`<h3>材料版本</h3>${materials?`<table><thead><tr><th>版本</th><th>原因</th><th>生成时间</th><th>材料</th></tr></thead><tbody>${materials}</tbody></table>`:'<p>尚无已保存材料。</p>'}<h3>变更记录</h3>${events?`<table><thead><tr><th>版本</th><th>操作</th><th>时间</th></tr></thead><tbody>${events}</tbody></table>`:'<p>尚无变更记录。</p>'}`}
+function addActionItem(values={}){let tr=document.createElement('tr');tr.innerHTML=`<td><input class="task" value="${escapeHtml(values.task||'')}"></td><td><input class="department" value="${escapeHtml(values.responsible_department||'')}"></td><td><input class="person" value="${escapeHtml(values.responsible_person||'')}"></td><td><input class="deadline" type="date" value="${escapeHtml(values.deadline||'')}"></td><td><input class="evidence" value="${escapeHtml(values.evidence_quote||'')}"></td><td><button class="secondary" onclick="this.closest('tr').remove()">删除</button></td>`;$('actionRows').appendChild(tr)}
+function collectActionItems(){return [...$('actionRows').querySelectorAll('tr')].map(tr=>({task:tr.querySelector('.task').value.trim(),responsible_department:tr.querySelector('.department').value.trim(),responsible_person:tr.querySelector('.person').value.trim(),deadline:tr.querySelector('.deadline').value,evidence_quote:tr.querySelector('.evidence').value.trim()})).filter(x=>x.task)}
+async function previewMinutes(){if(!mid)return msg('请先创建会议');try{let payload={source_text:$('minutes_source').value,summary:$('minutes_summary').value,action_items:collectActionItems()};let d=await api('/api/meeting/'+mid+'/minutes-preview',{payload});pending={kind:'minutes',payload,revision:d.revision,token:d.token};$('previewText').innerHTML=`<p>当前版本 ${d.revision}；确认后生成会议纪要初稿和督办事项清单。</p><h3>纪要摘要</h3><p>${escapeHtml(d.summary||'待确认')}</p><h3>督办事项</h3>${d.action_items.length?`<table><thead><tr><th>事项</th><th>责任部门</th><th>责任人</th><th>期限</th></tr></thead><tbody>${d.action_items.map(x=>`<tr><td>${escapeHtml(x.task)}</td><td>${escapeHtml(x.responsible_department||'待确认')}</td><td>${escapeHtml(x.responsible_person||'待确认')}</td><td>${escapeHtml(x.deadline||'待确认')}</td></tr>`).join('')}</tbody></table>`:'<p>未提取到督办事项。</p>'}<p>${d.findings.map(escapeHtml).join('<br>')||'未发现缺项'}</p>`;$('preview').style.display='block';$('preview').querySelector('button').disabled=false;$('preview').scrollIntoView({behavior:'smooth'});msg('请审核纪要和督办事项')}catch(e){msg(e.message)}}
+async function previewDetails(){if(!mid)return msg('请先创建会议');try{let payload=Object.fromEntries(detailFields.map(k=>[k,$(k).value]));let d=await api('/api/meeting/'+mid+'/details-preview',{payload});pending={kind:'details',payload,revision:d.revision,token:d.token};$('previewText').innerHTML=`<p>当前版本 ${d.revision}；将改变 ${d.changes.length} 个字段。</p><table><thead><tr><th>字段</th><th>修改前</th><th>修改后</th></tr></thead><tbody>${d.changes.map(c=>`<tr><td>${escapeHtml(detailLabels[c.field]||c.field)}</td><td>${escapeHtml(c.before||'未提供')}</td><td>${escapeHtml(c.after||'未提供')}</td></tr>`).join('')}</tbody></table><p>仍缺少：${d.missing_required.map(x=>escapeHtml(detailLabels[x]||x)).join('、')||'无'}</p><p>确认后重新生成：${d.affected_artifacts.map(escapeHtml).join('、')||'无'}</p>`;$('preview').style.display='block';$('preview').querySelector('button').disabled=!d.can_confirm;$('preview').scrollIntoView({behavior:'smooth'});msg('请审核会议信息变更')}catch(e){msg(e.message)}}
+async function parseFile(){if(!mid)return msg('请先创建会议');let f=$('file').files[0];if(!f)return msg('请选择 .xlsx 或 .docx 文件');try{let buffer=await f.arrayBuffer();let bytes=new Uint8Array(buffer);let binary='';for(let i=0;i<bytes.length;i++)binary+=String.fromCharCode(bytes[i]);let d=await api('/api/parse',{base64:btoa(binary),filename:f.name});$('findings').textContent=d.findings.map(x=>`第 ${x.row} 行：${x.message}`).join('\n')||`检查通过，共 ${d.people.length} 人`;await makePreview('import',{people:d.people})}catch(e){msg(e.message)}}
+async function makePreview(action,payload){try{let d=await api('/api/meeting/'+mid+'/preview',{action,payload});pending={kind:'roster',action,payload,revision:d.revision,token:d.token};const describe=p=>p?escapeHtml([p.name,p.organization,p.department,p.title,p.category,p.sort_order??'无手工序号'].join(' / ')):'无';$('previewText').innerHTML=`<p>当前版本 ${d.revision}；将改变 ${d.changes.length} 条记录；变更后 ${d.people.length} 人。</p><table><thead><tr><th>修改前</th><th>修改后</th></tr></thead><tbody>${d.changes.map(c=>`<tr><td>${describe(c.before)}</td><td>${describe(c.after)}</td></tr>`).join('')}</tbody></table><p>${d.findings.map(escapeHtml).join('<br>')||'未发现排序风险'}</p><p>重新排序：${d.people.map(p=>escapeHtml(p.name)).join(' → ')}</p><p>确认后重新生成：${d.affected_artifacts.map(escapeHtml).join('、')||'无'}</p><p>${d.can_generate?'可生成全部材料':'人数超过座位数，不能确认'}</p>`;$('preview').style.display='block';$('preview').querySelector('button').disabled=!d.can_generate;$('preview').scrollIntoView({behavior:'smooth'});msg('请审核变更后确认')}catch(e){msg(e.message)}}
+async function confirmChange(){if(!pending)return;try{if(pending.kind==='details'){let d=await api('/api/meeting/'+mid+'/details-commit',pending);pending=null;$('preview').style.display='none';await refresh();msg(d.message);return}if(pending.kind==='minutes'){let d=await api('/api/meeting/'+mid+'/minutes-commit',pending);pending=null;$('preview').style.display='none';await refresh();msg(d.message);return}let d=await api('/api/meeting/'+mid+'/commit',pending);downloadBase64(d.bundle_base64,`meeting-${mid.slice(0,8)}.zip`);pending=null;$('preview').style.display='none';await refresh();msg(d.message)}catch(e){msg(e.message)}}
+function cancelPreview(){pending=null;$('preview').style.display='none';msg('已取消，原数据未变')}
+async function deletePerson(id){if(!mid)return;await makePreview('delete',{id})}
+function openPersonEditor(p={}){$('person_id').value=p.id||'';$('person_name').value=p.name||'';$('person_organization').value=p.organization||'';$('person_department').value=p.department||'';$('person_title').value=p.title||'';$('person_category').value=p.category||'';$('person_sort_order').value=p.sort_order??'';$('personEditorTitle').textContent=p.id?'修改人员':'新增人员';$('personEditor').style.display='block';$('personEditor').scrollIntoView({behavior:'smooth',block:'center'})}
+function closePersonEditor(){$('personEditor').style.display='none'}
+async function previewPersonChange(){if(!mid)return msg('请先创建会议');let id=$('person_id').value,payload={name:$('person_name').value.trim(),organization:$('person_organization').value.trim(),department:$('person_department').value.trim(),title:$('person_title').value.trim(),category:$('person_category').value,sort_order:$('person_sort_order').value?Number($('person_sort_order').value):null};if(!payload.name||!payload.organization||!payload.title||!payload.category)return msg('请填写姓名、单位、职务和人员类别');if(id)payload.id=id;closePersonEditor();await makePreview(id?'update':'add',payload)}
+async function editPerson(id){let p=window.people.find(x=>x.id===id);if(p)openPersonEditor(p)}
+async function addPerson(){if(!mid)return msg('请先创建会议');openPersonEditor()}
+function downloadBase64(s,name){let bytes=Uint8Array.from(atob(s),c=>c.charCodeAt(0));let url=URL.createObjectURL(new Blob([bytes],{type:'application/zip'}));let a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),30000)}
+async function downloadCurrent(){if(!mid)return msg('请先创建会议');try{let r=await fetch('/api/meeting/'+mid+'/bundle');if(!r.ok){let d=await r.json();throw Error(d.error)}let b=await r.blob();let url=URL.createObjectURL(b);let a=document.createElement('a');a.href=url;a.download=`meeting-${mid.slice(0,8)}.zip`;a.click();setTimeout(()=>URL.revokeObjectURL(url),30000)}catch(e){msg(e.message)}}
+collapseByDefault();addActionItem();loadMeetings();loadAiStatus();loadTemplateRecommend().catch(e=>{ $('tplReason').textContent='读取推荐失败：'+e.message });if(mid)refresh().catch(e=>msg(e.message));
+</script></body></html>
